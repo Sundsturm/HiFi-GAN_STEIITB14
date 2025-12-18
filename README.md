@@ -1,5 +1,5 @@
 # HiFi-GAN_STEIITB14
-An implementation of HiFi-GAN that is developed by Jiaqi Su et al. with LSI design digitally.
+An implementation of HiFi-GAN that is developed by Jiaqi Su et al. with LSI design digitally.\
 References:
 1. J. Su, Z. Jin, and A. Finkelstein, "HiFi-GAN: High-Fidelity Denoising and Dereverberation Based on Speech Deep Features in Adversarial Networks," in Proc. Interspeech 2020, Shanghai, China, Oct. 2020, pp. 4506–4510. doi: 10.21437/Interspeech.2020-2143.
 2. D. Rethage, J. Pons, and X. Serra, "A Wavenet for Speech Denoising," in 2018 IEEE Int. Conf. Acoust., Speech Signal Process. (ICASSP), Calgary, AB, Canada, 2018, pp. 5069–5073. doi: 10.1109/ICASSP.2018.8462415.
