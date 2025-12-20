@@ -71,9 +71,9 @@ function lgraph = createFinalWaveNetGenerator()
             lgraph = connectLayers(lgraph, lastLayerName, gateConvName);
             lgraph = connectLayers(lgraph, gateConvName, gateActName);
             
-            % Merge branches
-            lgraph = connectLayers(lgraph, filtActName, [multName '/1']);
-            lgraph = connectLayers(lgraph, gateActName, [multName '/2']);
+            % Merge branches (PERBAIKAN DI SINI: Gunakan 'in1' dan 'in2')
+            lgraph = connectLayers(lgraph, filtActName, [multName '/in1']);
+            lgraph = connectLayers(lgraph, gateActName, [multName '/in2']);
             
             % --- B. RESIDUAL CONNECTION (Channel Mixing) ---
             % 1x1 Convolution wajib digunakan di sini untuk mencampur fitur
@@ -87,11 +87,11 @@ function lgraph = createFinalWaveNetGenerator()
             addName = [baseName '_res_add'];
             lgraph = addLayers(lgraph, additionLayer(2, 'Name', addName));
             
-            % Connect Mixing Output -> Add
-            lgraph = connectLayers(lgraph, mixName, [addName '/1']);
+            % Connect Mixing Output -> Add (PERBAIKAN DI SINI: Gunakan 'in1')
+            lgraph = connectLayers(lgraph, mixName, [addName '/in1']);
             
-            % Connect Skip/Residual Path (Input Awal) -> Add
-            lgraph = connectLayers(lgraph, lastLayerName, [addName '/2']);
+            % Connect Skip/Residual Path (Input Awal) -> Add (PERBAIKAN DI SINI: Gunakan 'in2')
+            lgraph = connectLayers(lgraph, lastLayerName, [addName '/in2']);
             
             % Update pointer layer terakhir
             lastLayerName = addName;
