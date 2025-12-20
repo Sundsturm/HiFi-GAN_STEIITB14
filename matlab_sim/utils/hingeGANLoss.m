@@ -1,16 +1,22 @@
 function [lossG, lossD] = hingeGANLoss(scoreReal, scoreFake)
-    % hingeGANLoss Menghitung Hinge Loss sesuai persamaan (1) dan (2)
+    % hingeGANLoss: Menghitung Adversarial Loss (Hinge Version)
+    % Robust Version: Menggunakan max(0, x) alih-alih relu()
     
-    % --- DISCRIMINATOR LOSS ---
-    % Eq (2): L_D = max(0, 1 + D(Fake)) + max(0, 1 - D(Real))
-    % Artinya: Real harus > 1, Fake harus < -1.
-    lossD_Real = mean(relu(1 - scoreReal), 'all');
-    lossD_Fake = mean(relu(1 + scoreFake), 'all');
+    % 1. FORCE REAL
+    % Mencegah error jika ada sisa-sisa bilangan kompleks dari konvolusi
+    scoreReal = real(scoreReal);
+    scoreFake = real(scoreFake);
+    
+    % 2. DISCRIMINATOR LOSS
+    % Formula: E[ReLU(1 - D(x))] + E[ReLU(1 + D(G(z)))]
+    % Kita gunakan max(0, ...) sebagai pengganti relu(...) agar lebih aman
+    
+    lossD_Real = mean(max(0, 1 - scoreReal), 'all');
+    lossD_Fake = mean(max(0, 1 + scoreFake), 'all');
+    
     lossD = lossD_Real + lossD_Fake;
     
-    % --- GENERATOR LOSS ---
-    % Eq (1): L_G = max(0, 1 - D(Fake))
-    % Artinya: Generator ingin menipu D agar menilai Fake > 1.
-    % Jika D(Fake) > 1, loss = 0.
-    lossG = mean(relu(1 - scoreFake), 'all');
+    % 3. GENERATOR LOSS
+    % Formula: -E[D(G(z))]
+    lossG = -mean(scoreFake, 'all');
 end

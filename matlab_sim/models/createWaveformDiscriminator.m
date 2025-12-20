@@ -1,63 +1,58 @@
-% Waveform Discriminator
 function lgraph = createWaveformDiscriminator()
-    % createWaveformDiscriminator
-    % Membangun Waveform Discriminator sesuai konfigurasi MelGAN & Gambar #3
-    
-    % --- 1. DEFINISI PARAMETER (Sesuai Gambar & Teks) ---
-    kernelSizes  = [15, 41, 41, 41, 41, 5, 3];
-    strideSizes  = [1,  4,  4,  4,  4, 1, 1];
-    channelSizes = [16, 64, 256, 1024, 1024, 1024, 1];
-    groupSizes   = [1,  4,  16, 64, 256, 1, 1];
-    
-    numLayers = length(kernelSizes); % Total 7 Layer
+    % Waveform Discriminator dengan GLOBAL AVERAGE POOLING
+    % Output: Skalar tunggal (1x1) per batch, bukan sequence.
     
     lgraph = layerGraph();
     
-    % --- 2. INPUT LAYER ---
-    % Input berupa Raw Audio Waveform (1 Channel)
-    inputName = 'wav_input';
-    lgraph = addLayers(lgraph, sequenceInputLayer(1, 'Name', inputName, 'Normalization', 'none'));
-    lastLayerName = inputName;
+    % 1. Input Layer
+    lgraph = addLayers(lgraph, sequenceInputLayer(1, 'Name', 'input', 'Normalization', 'none'));
     
-    % --- 3. LOOP KONSTRUKSI 7 LAYER ---
-    for i = 1:numLayers
-        % Ambil parameter untuk layer ke-i
-        k = kernelSizes(i);
-        s = strideSizes(i);
-        c = channelSizes(i);
-        g = groupSizes(i);
-        
-        layerIdxName = sprintf('conv_%d', i);
-        
-        % Definisi Grouped Convolution Layer
-        % 'Padding same' penting agar dimensi spasial konsisten dengan stride
-        convLayer = convolution1dLayer(k, c, ...
-            'Stride', s, ...
-            'Padding', 'same', ...
-            'NumGroups', g, ... % Parameter kunci dari MelGAN
-            'Name', layerIdxName);
-            
-        lgraph = addLayers(lgraph, convLayer);
-        lgraph = connectLayers(lgraph, lastLayerName, layerIdxName);
-        lastLayerName = layerIdxName;
-        
-        % Tambahkan Leaky ReLU (Hanya untuk Layer 1 s/d 6)
-        % Sesuai gambar, kotak terakhir (Layer 7) hanya bertuliskan "Conv."
-        % tanpa kotak "Leaky Relu" di sebelahnya.
-        if i < numLayers
-            actName = sprintf('lrelu_%d', i);
-            % Slope 0.2 adalah standar umum MelGAN
-            lgraph = addLayers(lgraph, leakyReluLayer(0.2, 'Name', actName));
-            lgraph = connectLayers(lgraph, lastLayerName, actName);
-            lastLayerName = actName;
-        end
-    end
+    lastLayerName = 'input';
     
-    % --- 4. GLOBAL AVERAGE MEAN POOL ---
-    % Sesuai kotak paling kanan di gambar: "Global Average Mean Pool"
-    poolName = 'global_pool';
-    lgraph = addLayers(lgraph, globalAveragePooling1dLayer('Name', poolName));
-    lgraph = connectLayers(lgraph, lastLayerName, poolName);
+    % --- DOWN-SAMPLING BLOCKS ---
+    % Sama seperti sebelumnya (Conv -> LeakyReLU)
     
-    % Output akhir: Skor skalar [1 x 1 x Batch]
+    % Layer 1: Downsample 4x
+    lgraph = addLayers(lgraph, convolution1dLayer(15, 64, 'Stride', 4, 'Padding', 'same', 'Name', 'conv_1'));
+    lgraph = addLayers(lgraph, leakyReluLayer(0.2, 'Name', 'lrelu_1'));
+    lgraph = connectLayers(lgraph, lastLayerName, 'conv_1');
+    lgraph = connectLayers(lgraph, 'conv_1', 'lrelu_1');
+    lastLayerName = 'lrelu_1';
+    
+    % Layer 2: Downsample 4x
+    lgraph = addLayers(lgraph, convolution1dLayer(41, 128, 'Stride', 4, 'Padding', 'same', 'Name', 'conv_2'));
+    lgraph = addLayers(lgraph, leakyReluLayer(0.2, 'Name', 'lrelu_2'));
+    lgraph = connectLayers(lgraph, lastLayerName, 'conv_2');
+    lgraph = connectLayers(lgraph, 'conv_2', 'lrelu_2');
+    lastLayerName = 'lrelu_2';
+    
+    % Layer 3: Downsample 4x
+    lgraph = addLayers(lgraph, convolution1dLayer(41, 256, 'Stride', 4, 'Padding', 'same', 'Name', 'conv_3'));
+    lgraph = addLayers(lgraph, leakyReluLayer(0.2, 'Name', 'lrelu_3'));
+    lgraph = connectLayers(lgraph, lastLayerName, 'conv_3');
+    lgraph = connectLayers(lgraph, 'conv_3', 'lrelu_3');
+    lastLayerName = 'lrelu_3';
+    
+    % Layer 4: Downsample 4x
+    lgraph = addLayers(lgraph, convolution1dLayer(41, 512, 'Stride', 4, 'Padding', 'same', 'Name', 'conv_4'));
+    lgraph = addLayers(lgraph, leakyReluLayer(0.2, 'Name', 'lrelu_4'));
+    lgraph = connectLayers(lgraph, lastLayerName, 'conv_4');
+    lgraph = connectLayers(lgraph, 'conv_4', 'lrelu_4');
+    lastLayerName = 'lrelu_4';
+    
+    % Layer 5: Conv Biasa (Feature Extraction)
+    lgraph = addLayers(lgraph, convolution1dLayer(5, 1024, 'Padding', 'same', 'Name', 'conv_5'));
+    lgraph = addLayers(lgraph, leakyReluLayer(0.2, 'Name', 'lrelu_5'));
+    lgraph = connectLayers(lgraph, lastLayerName, 'conv_5');
+    lgraph = connectLayers(lgraph, 'conv_5', 'lrelu_5');
+    lastLayerName = 'lrelu_5';
+    
+    % Layer 6: Final Projection (Ke 1 Channel)
+    lgraph = addLayers(lgraph, convolution1dLayer(3, 1, 'Padding', 'same', 'Name', 'final_conv'));
+    lgraph = connectLayers(lgraph, lastLayerName, 'final_conv');
+    
+    % --- REVISI: GLOBAL AVERAGE POOLING ---
+    % Mengubah input [Time x 1] menjadi [1 x 1] (Rata-rata seluruh waktu)
+    lgraph = addLayers(lgraph, globalAveragePooling1dLayer('Name', 'global_pool'));
+    lgraph = connectLayers(lgraph, 'final_conv', 'global_pool');
 end
