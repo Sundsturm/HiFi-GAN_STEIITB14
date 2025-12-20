@@ -1,2 +1,2 @@
-matlab_sim/data
-matlab_sim/*.mat
+src/matlab_sim/data
+src/matlab_sim/*.mat
