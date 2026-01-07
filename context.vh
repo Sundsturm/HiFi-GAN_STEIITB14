@@ -1,6 +1,7 @@
 // === CONTEXT FOR COPILOT - HiFi-GAN Generator + PostNet 
 // You are helping write RTL Verilog (NOT SystemVerilog) for a HiFi-GAN
 // Generator G + PostNet hardware implementation.
+// Paper: https://arxiv.org/pdf/2006.05694
 
 // GENERAL CONSTRAINTS:
 // - Use pure Verilog-2001 syntax only.
