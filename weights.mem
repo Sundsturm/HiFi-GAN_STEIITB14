@@ -1,0 +1,41 @@
+// HiFi-GAN Weight Memory - Example Format
+// Format: One 16-bit hex value per line (Q2.14 fixed-point)
+// Organization: Flattened [layer][ch_out][ch_in][kernel_pos]
+//
+// Example calculation for PostNet Layer 0:
+// - Input channels: 1, Output channels: 32, Kernel size: 5
+// - Total weights for layer 0: 1 * 32 * 5 = 160 weights
+// - Address range: 0x0000 to 0x009F
+//
+// PostNet Layer 1-3: 32 * 32 * 5 = 5120 weights each
+// PostNet Layer 4: 32 * 1 * 5 = 160 weights
+//
+// Sample weights below (initialized to small random values)
+
+// Layer 0, Channel 0, Kernel weights (5 values)
+0100  // 0.0625 in Q2.14
+00C0  // 0.0469
+0080  // 0.0313
+0040  // 0.0156
+0020  // 0.0078
+
+// Layer 0, Channel 1, Kernel weights
+0110
+00D0
+0090
+0050
+0030
+
+// Layer 0, Channel 2-31 (abbreviated for example)
+0105
+00C5
+0085
+0045
+0025
+
+// ... Continue pattern for remaining channels and layers ...
+// For actual use, generate with Python/MATLAB script
+
+// Fill remaining with zeros for simulation
+@00A0
+0000
