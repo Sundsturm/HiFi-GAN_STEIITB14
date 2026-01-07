@@ -59,12 +59,13 @@ module postnet_stack #(
     localparam KERNEL_HALF = (KERNEL_SIZE - 1) / 2;
     
     // FSM States
-    localparam [2:0] ST_IDLE       = 3'd0;
-    localparam [2:0] ST_LOAD       = 3'd1;
-    localparam [2:0] ST_COMPUTE    = 3'd2;
-    localparam [2:0] ST_ACTIVATE   = 3'd3;
-    localparam [2:0] ST_OUTPUT     = 3'd4;
-    localparam [2:0] ST_DONE       = 3'd5;
+    localparam [2:0] ST_IDLE         = 3'd0;
+    localparam [2:0] ST_LOAD         = 3'd1;
+    localparam [2:0] ST_FETCH_WEIGHT = 3'd2;
+    localparam [2:0] ST_COMPUTE      = 3'd3;
+    localparam [2:0] ST_ACTIVATE     = 3'd4;
+    localparam [2:0] ST_OUTPUT       = 3'd5;
+    localparam [2:0] ST_DONE         = 3'd6;
 
     //==========================================================================
     // Internal Registers
@@ -81,10 +82,21 @@ module postnet_stack #(
     reg [$clog2(KERNEL_SIZE)-1:0] buf_wr_ptr;
     reg buf_ready;
     
-    // Weight and bias memory (inferred BRAM)
-    // Organized as: [layer][channel_out][channel_in][kernel_pos]
-    reg signed [DATA_WIDTH-1:0] weight_mem [0:WEIGHT_DEPTH-1];
-    reg signed [DATA_WIDTH-1:0] bias_mem   [0:NUM_LAYERS*NUM_CHANNELS-1];
+    // Shared memory interface signals
+    reg [$clog2(WEIGHT_DEPTH)-1:0]   weight_addr;
+    reg                               weight_rd_en;
+    wire signed [DATA_WIDTH-1:0]      weight_data;
+    wire                              weight_valid;
+    
+    reg [$clog2(NUM_LAYERS*NUM_CHANNELS)-1:0] bias_addr;
+    reg                               bias_rd_en;
+    wire signed [DATA_WIDTH-1:0]      bias_data;
+    wire                              bias_valid;
+    
+    // Weight fetch buffer (for sequential reads)
+    reg signed [DATA_WIDTH-1:0] weight_buffer [0:KERNEL_SIZE-1];
+    reg [$clog2(KERNEL_SIZE)-1:0] weight_fetch_cnt;
+    reg weight_fetch_done;
     
     // MAC interface signals
     reg                              mac_calc_en;
@@ -104,20 +116,37 @@ module postnet_stack #(
     wire signed [DATA_WIDTH-1:0]     act_out;
     reg  signed [DATA_WIDTH-1:0]     post_act_data;
     
-    // Weight address calculation
-    reg [$clog2(WEIGHT_DEPTH)-1:0]   weight_addr;
-    reg [$clog2(NUM_LAYERS*NUM_CHANNELS)-1:0] bias_addr;
-    
     // Intermediate storage
     reg signed [DATA_WIDTH-1:0] conv_result_r;
     
     //==========================================================================
-    // Memory Initialization
+    // Shared Memory Instances
     //==========================================================================
-    initial begin
-        $readmemh("postnet_weights.mem", weight_mem);
-        $readmemh("postnet_bias.mem", bias_mem);
-    end
+    weight_mem #(
+        .DATA_WIDTH(DATA_WIDTH),
+        .DEPTH(WEIGHT_DEPTH),
+        .MEM_FILE("weights.mem")
+    ) u_weight_mem (
+        .clk     (clk),
+        .rst_n   (rst_n),
+        .i_addr  (weight_addr),
+        .i_rd_en (weight_rd_en),
+        .o_data  (weight_data),
+        .o_valid (weight_valid)
+    );
+    
+    bias_mem #(
+        .DATA_WIDTH(DATA_WIDTH),
+        .DEPTH(NUM_LAYERS*NUM_CHANNELS),
+        .MEM_FILE("biases.mem")
+    ) u_bias_mem (
+        .clk     (clk),
+        .rst_n   (rst_n),
+        .i_addr  (bias_addr),
+        .i_rd_en (bias_rd_en),
+        .o_data  (bias_data),
+        .o_valid (bias_valid)
+    );
 
     //==========================================================================
     // MAC Array Instance
@@ -181,12 +210,18 @@ module postnet_stack #(
             ST_LOAD: begin
                 // Wait until line buffer has enough samples
                 if (buf_ready)
+                    state_next = ST_FETCH_WEIGHT;
+            end
+            
+            ST_FETCH_WEIGHT: begin
+                // Fetch all kernel weights sequentially
+                if (weight_fetch_done)
                     state_next = ST_COMPUTE;
             end
             
             ST_COMPUTE: begin
-                // Process all kernel elements and channels
-                if (mac_valid && kernel_cnt_r == KERNEL_SIZE - 1)
+                // MAC computation with fetched weights
+                if (mac_valid)
                     state_next = ST_ACTIVATE;
             end
             
@@ -232,27 +267,36 @@ module postnet_stack #(
             quant_valid_in <= 1'b0;
             
             weight_addr   <= 0;
+            weight_rd_en  <= 1'b0;
             bias_addr     <= 0;
+            bias_rd_en    <= 1'b0;
             conv_result_r <= 0;
+            
+            weight_fetch_cnt <= 0;
+            weight_fetch_done <= 1'b0;
         end
         else begin
             // Default pulse signals
-            o_done       <= 1'b0;
-            o_data_valid <= 1'b0;
-            mac_calc_en  <= 1'b0;
-            mac_clear_acc <= 1'b0;
+            o_done         <= 1'b0;
+            o_data_valid   <= 1'b0;
+            mac_calc_en    <= 1'b0;
+            mac_clear_acc  <= 1'b0;
             quant_valid_in <= 1'b0;
+            weight_rd_en   <= 1'b0;
+            bias_rd_en     <= 1'b0;
             
             case (state_r)
                 ST_IDLE: begin
                     o_busy <= 1'b0;
                     if (i_start) begin
-                        o_busy        <= 1'b1;
-                        sample_cnt_r  <= 0;
-                        channel_cnt_r <= 0;
-                        kernel_cnt_r  <= 0;
-                        buf_wr_ptr    <= 0;
-                        buf_ready     <= 1'b0;
+                        o_busy            <= 1'b1;
+                        sample_cnt_r      <= 0;
+                        channel_cnt_r     <= 0;
+                        kernel_cnt_r      <= 0;
+                        buf_wr_ptr        <= 0;
+                        buf_ready         <= 1'b0;
+                        weight_fetch_cnt  <= 0;
+                        weight_fetch_done <= 1'b0;
                     end
                 end
                 
@@ -271,39 +315,63 @@ module postnet_stack #(
                     end
                 end
                 
+                ST_FETCH_WEIGHT: begin
+                    // Sequential weight fetch from shared memory
+                    if (!weight_fetch_done) begin
+                        // Calculate weight address
+                        // Address = layer_offset + channel_offset + kernel_pos
+                        weight_addr <= (i_layer_sel * NUM_CHANNELS * KERNEL_SIZE) + 
+                                       (channel_cnt_r * KERNEL_SIZE) + weight_fetch_cnt;
+                        weight_rd_en <= 1'b1;
+                        
+                        // Store fetched weight in buffer
+                        if (weight_valid) begin
+                            weight_buffer[weight_fetch_cnt - 1] <= weight_data;
+                            
+                            if (weight_fetch_cnt >= KERNEL_SIZE) begin
+                                weight_fetch_done <= 1'b1;
+                            end
+                            else begin
+                                weight_fetch_cnt <= weight_fetch_cnt + 1;
+                            end
+                        end
+                        else if (weight_rd_en) begin
+                            weight_fetch_cnt <= weight_fetch_cnt + 1;
+                        end
+                    end
+                end
+                
                 ST_COMPUTE: begin
                     // Pack line buffer into MAC input
                     mac_activations <= {line_buffer[4], line_buffer[3], 
                                         line_buffer[2], line_buffer[1], 
                                         line_buffer[0]};
                     
-                    // Calculate weight address
-                    // Address = layer_offset + channel_offset + kernel_pos
-                    weight_addr <= (i_layer_sel * NUM_CHANNELS * KERNEL_SIZE) + 
-                                   (channel_cnt_r * KERNEL_SIZE) + kernel_cnt_r;
-                    
-                    // Load weights from memory
-                    mac_weights <= weight_mem[weight_addr];
+                    // Pack fetched weights into MAC input
+                    mac_weights <= {weight_buffer[4], weight_buffer[3],
+                                    weight_buffer[2], weight_buffer[1],
+                                    weight_buffer[0]};
                     
                     // Start MAC computation
-                    mac_calc_en <= 1'b1;
-                    mac_clear_acc <= (kernel_cnt_r == 0);
+                    mac_calc_en   <= 1'b1;
+                    mac_clear_acc <= 1'b1;  // Single MAC operation per channel
                     
-                    if (mac_valid) begin
-                        if (kernel_cnt_r < KERNEL_SIZE - 1) begin
-                            kernel_cnt_r <= kernel_cnt_r + 1;
-                        end
-                    end
+                    // Reset weight fetch for next iteration
+                    weight_fetch_cnt  <= 0;
+                    weight_fetch_done <= 1'b0;
                 end
                 
                 ST_ACTIVATE: begin
-                    // Add bias and prepare for quantization
-                    bias_addr <= (i_layer_sel * NUM_CHANNELS) + channel_cnt_r;
+                    // Read bias from shared memory
+                    bias_addr  <= (i_layer_sel * NUM_CHANNELS) + channel_cnt_r;
+                    bias_rd_en <= 1'b1;
                     
-                    // Extend bias to 32-bit and add to accumulator
-                    quant_data_in  <= mac_acc_raw + {{16{bias_mem[bias_addr][15]}}, 
-                                                      bias_mem[bias_addr]};
-                    quant_valid_in <= 1'b1;
+                    // Add bias to accumulator when valid
+                    if (bias_valid) begin
+                        // Extend bias to 32-bit and add to accumulator
+                        quant_data_in  <= mac_acc_raw + {{16{bias_data[15]}}, bias_data};
+                        quant_valid_in <= 1'b1;
+                    end
                     
                     // Apply activation based on layer
                     if (quant_valid_out) begin
