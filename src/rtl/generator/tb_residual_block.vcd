@@ -1,0 +1,448 @@
+$date
+	Thu Jan 08 09:06:03 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module tb_residual_block $end
+$var wire 1 ! done $end
+$var wire 1 " d_out_valid $end
+$var wire 16 # d_out [15:0] $end
+$var parameter 32 $ DATA_WIDTH $end
+$var parameter 32 % FIFO_DEPTH $end
+$var reg 1 & clk $end
+$var reg 16 ' d_in [15:0] $end
+$var reg 1 ( d_in_valid $end
+$var reg 1 ) rst_n $end
+$var reg 1 * start $end
+$var integer 32 + i [31:0] $end
+$scope module dut $end
+$var wire 1 & clk $end
+$var wire 16 , d_in [15:0] $end
+$var wire 1 ( d_in_valid $end
+$var wire 16 - max_pos [15:0] $end
+$var wire 16 . min_neg [15:0] $end
+$var wire 1 ) rst_n $end
+$var wire 16 / skip_data_out [15:0] $end
+$var wire 1 * start $end
+$var wire 17 0 sum_temp [16:0] $end
+$var wire 1 ! done $end
+$var wire 1 1 conv2_valid $end
+$var wire 16 2 conv2_out [15:0] $end
+$var wire 1 3 conv1_valid $end
+$var wire 16 4 conv1_out [15:0] $end
+$var wire 1 5 act2_valid $end
+$var wire 16 6 act2_out [15:0] $end
+$var wire 1 7 act1_valid $end
+$var wire 16 8 act1_out [15:0] $end
+$var parameter 32 9 CHANNELS $end
+$var parameter 32 : DATA_WIDTH $end
+$var parameter 32 ; DILATION_1 $end
+$var parameter 32 < DILATION_2 $end
+$var parameter 32 = FIFO_DEPTH $end
+$var parameter 32 > KERNEL_SIZE $end
+$var reg 6 ? count [5:0] $end
+$var reg 16 @ d_out [15:0] $end
+$var reg 1 " d_out_valid $end
+$var reg 5 A rd_ptr [4:0] $end
+$var reg 5 B wr_ptr [4:0] $end
+$scope module u_act_1 $end
+$var wire 1 & clk $end
+$var wire 16 C in_data [15:0] $end
+$var wire 1 ( in_valid $end
+$var wire 1 ) rst_n $end
+$var parameter 80 D ACT_TYPE $end
+$var parameter 32 E DATA_WIDTH $end
+$var reg 16 F out_data [15:0] $end
+$var reg 1 7 out_valid $end
+$upscope $end
+$scope module u_act_2 $end
+$var wire 1 & clk $end
+$var wire 1 ) rst_n $end
+$var wire 1 3 in_valid $end
+$var wire 16 G in_data [15:0] $end
+$var parameter 80 H ACT_TYPE $end
+$var parameter 32 I DATA_WIDTH $end
+$var reg 16 J out_data [15:0] $end
+$var reg 1 5 out_valid $end
+$upscope $end
+$scope module u_conv_1 $end
+$var wire 1 & clk $end
+$var wire 16 K d_in [15:0] $end
+$var wire 1 7 d_in_valid $end
+$var wire 1 ) rst_n $end
+$var wire 1 * start $end
+$var parameter 32 L DATA_WIDTH $end
+$var parameter 32 M DILATION $end
+$var parameter 32 N KERNEL_SIZE $end
+$var reg 16 O d_out [15:0] $end
+$var reg 1 3 d_out_valid $end
+$var reg 16 P stage1_data [15:0] $end
+$var reg 1 Q stage1_valid $end
+$upscope $end
+$scope module u_conv_2 $end
+$var wire 1 & clk $end
+$var wire 16 R d_in [15:0] $end
+$var wire 1 5 d_in_valid $end
+$var wire 1 ) rst_n $end
+$var wire 1 * start $end
+$var parameter 32 S DATA_WIDTH $end
+$var parameter 32 T DILATION $end
+$var parameter 32 U KERNEL_SIZE $end
+$var reg 16 V d_out [15:0] $end
+$var reg 1 1 d_out_valid $end
+$var reg 16 W stage1_data [15:0] $end
+$var reg 1 X stage1_valid $end
+$upscope $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b11 U
+b1 T
+b10000 S
+b11 N
+b1 M
+b10000 L
+b10000 I
+b1001100010001010100000101001011010110010101111101010010010001010100110001010101 H
+b10000 E
+b1001100010001010100000101001011010110010101111101010010010001010100110001010101 D
+b11 >
+b100000 =
+b1 <
+b1 ;
+b10000 :
+b10000000 9
+b100000 %
+b10000 $
+$end
+#0
+$dumpvars
+0X
+b0 W
+b0 V
+b0 R
+0Q
+b0 P
+b0 O
+b0 K
+b0 J
+b0 G
+b0 F
+b0 C
+b0 B
+b0 A
+b0 @
+b0 ?
+b0 8
+07
+b0 6
+05
+b0 4
+03
+b0 2
+01
+bx 0
+bx /
+b1000000000000000 .
+b111111111111111 -
+b0 ,
+bx +
+0*
+0)
+0(
+b0 '
+0&
+b0 #
+0"
+1!
+$end
+#5000
+1&
+#10000
+0&
+#15000
+1&
+#20000
+0&
+1)
+#25000
+1&
+#30000
+0&
+1*
+#35000
+1&
+#40000
+0&
+b1 +
+0*
+#45000
+1(
+b1010 '
+b1010 ,
+b1010 C
+b10 +
+1&
+#50000
+0&
+#55000
+17
+b1010 8
+b1010 F
+b1010 K
+b1 ?
+b1 B
+b1010 0
+b1010 /
+b10100 '
+b10100 ,
+b10100 C
+b11 +
+1&
+#60000
+0&
+#65000
+b10 ?
+b10 B
+1Q
+b1010 P
+b10100 8
+b10100 F
+b10100 K
+b11110 '
+b11110 ,
+b11110 C
+b100 +
+1&
+#70000
+0&
+#75000
+b11110 8
+b11110 F
+b11110 K
+13
+b10100 4
+b10100 G
+b10100 O
+b10100 P
+b11 ?
+b11 B
+b101000 '
+b101000 ,
+b101000 C
+b101 +
+1&
+#80000
+0&
+#85000
+b100 ?
+b100 B
+15
+b10100 6
+b10100 J
+b10100 R
+b11110 4
+b11110 G
+b11110 O
+b11110 P
+b101000 8
+b101000 F
+b101000 K
+b110010 '
+b110010 ,
+b110010 C
+b110 +
+1&
+#90000
+0&
+#95000
+b110010 8
+b110010 F
+b110010 K
+b101000 4
+b101000 G
+b101000 O
+b101000 P
+b11110 6
+b11110 J
+b11110 R
+1X
+b10100 W
+b101 ?
+b101 B
+0(
+b0 '
+b0 ,
+b0 C
+1&
+#100000
+0&
+#105000
+11
+b101000 0
+b11110 2
+b11110 V
+b11110 W
+b101000 6
+b101000 J
+b101000 R
+b110010 4
+b110010 G
+b110010 O
+b110010 P
+07
+b0 8
+b0 F
+b0 K
+1&
+#110000
+0&
+#115000
+b111100 4
+b111100 G
+b111100 O
+0Q
+b0 P
+b110010 6
+b110010 J
+b110010 R
+b101000 2
+b101000 V
+b101000 W
+b100 ?
+b111100 0
+b10100 /
+b1 A
+b101000 #
+b101000 @
+0!
+1"
+1&
+#120000
+0&
+#125000
+b111100 #
+b111100 @
+b11 ?
+b11110 /
+b10 A
+b1010000 0
+b110010 2
+b110010 V
+b110010 W
+b111100 6
+b111100 J
+b111100 R
+03
+b0 4
+b0 G
+b0 O
+1&
+#130000
+0&
+#135000
+05
+b0 6
+b0 J
+b0 R
+b111100 2
+b111100 V
+b111100 W
+b10 ?
+b1100100 0
+b101000 /
+b11 A
+b1010000 #
+b1010000 @
+1&
+#140000
+0&
+#145000
+b1100100 #
+b1100100 @
+b1 ?
+b110010 /
+b100 A
+b1111000 0
+b1000110 2
+b1000110 V
+0X
+b0 W
+1&
+#150000
+0&
+#155000
+01
+b0 2
+b0 V
+b0 ?
+bx 0
+bx /
+b101 A
+b1111000 #
+b1111000 @
+1&
+#160000
+0&
+#165000
+1!
+0"
+1&
+#170000
+0&
+#175000
+1&
+#180000
+0&
+#185000
+1&
+#190000
+0&
+#195000
+1&
+#200000
+0&
+#205000
+1&
+#210000
+0&
+#215000
+1&
+#220000
+0&
+#225000
+1&
+#230000
+0&
+#235000
+1&
+#240000
+0&
+#245000
+1&
+#250000
+0&
+#255000
+1&
+#260000
+0&
+#265000
+1&
+#270000
+0&
+#275000
+1&
+#280000
+0&
+#285000
+1&
+#290000
+0&
+#295000
+1&
