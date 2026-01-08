@@ -1,0 +1,370 @@
+$date
+	Thu Jan 08 08:13:21 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module tb_upsample_module $end
+$var wire 1 ! out_mem_we $end
+$var wire 16 " out_mem_data [15:0] $end
+$var wire 10 # out_mem_addr [9:0] $end
+$var wire 10 $ in_mem_addr [9:0] $end
+$var wire 1 % done $end
+$var wire 1 & busy $end
+$var parameter 32 ' ADDR_WIDTH $end
+$var parameter 32 ( DATA_WIDTH $end
+$var parameter 32 ) UPSAMPLE_RATE $end
+$var reg 1 * clk $end
+$var reg 16 + in_mem_data [15:0] $end
+$var reg 10 , input_len [9:0] $end
+$var reg 1 - rst_n $end
+$var reg 1 . start $end
+$scope module uut $end
+$var wire 1 * clk $end
+$var wire 16 / in_mem_data [15:0] $end
+$var wire 10 0 input_len [9:0] $end
+$var wire 1 - rst_n $end
+$var wire 1 . start $end
+$var parameter 32 1 ADDR_WIDTH $end
+$var parameter 32 2 DATA_WIDTH $end
+$var parameter 3 3 S_CHECK_DONE $end
+$var parameter 3 4 S_DONE $end
+$var parameter 3 5 S_IDLE $end
+$var parameter 3 6 S_READ_ADDR $end
+$var parameter 3 7 S_READ_WAIT $end
+$var parameter 3 8 S_WRITE_LOOP $end
+$var parameter 32 9 UPSAMPLE_RATE $end
+$var reg 1 & busy $end
+$var reg 10 : cnt_in [9:0] $end
+$var reg 10 ; cnt_out [9:0] $end
+$var reg 4 < cnt_repeat [3:0] $end
+$var reg 16 = data_buffer [15:0] $end
+$var reg 1 % done $end
+$var reg 10 > in_mem_addr [9:0] $end
+$var reg 3 ? next_state [2:0] $end
+$var reg 10 @ out_mem_addr [9:0] $end
+$var reg 16 A out_mem_data [15:0] $end
+$var reg 1 ! out_mem_we $end
+$var reg 3 B state [2:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b10 9
+b11 8
+b10 7
+b1 6
+b0 5
+b101 4
+b100 3
+b10000 2
+b1010 1
+b10 )
+b10000 (
+b1010 '
+$end
+#0
+$dumpvars
+b0 B
+b0 A
+b0 @
+b0 ?
+b0 >
+b0 =
+b0 <
+b0 ;
+b0 :
+b101 0
+bx /
+0.
+0-
+b101 ,
+bx +
+0*
+0&
+0%
+b0 $
+b0 #
+b0 "
+0!
+$end
+#5000
+b1010 +
+b1010 /
+1*
+#10000
+0*
+#15000
+1*
+#20000
+0*
+1-
+#25000
+1*
+#30000
+b1 ?
+0*
+1.
+#35000
+b10 ?
+b1 B
+1&
+1*
+#40000
+b10 ?
+0*
+0.
+#45000
+b11 ?
+b10 B
+1*
+#50000
+0*
+#55000
+b11 B
+1*
+#60000
+0*
+#65000
+b100 ?
+b1 <
+b1 ;
+1!
+b1010 "
+b1010 A
+b1010 =
+1*
+#70000
+0*
+#75000
+b1 ?
+b100 B
+b10 <
+b10 ;
+b1 #
+b1 @
+1!
+1*
+#80000
+0*
+#85000
+b10 ?
+b1 :
+b0 <
+0!
+b1 B
+1*
+#90000
+0*
+#95000
+b11 ?
+b10 B
+b1 $
+b1 >
+1*
+#100000
+0*
+#105000
+b11 B
+b10100 +
+b10100 /
+1*
+#110000
+0*
+#115000
+b100 ?
+b1 <
+b11 ;
+1!
+b10 #
+b10 @
+b10100 "
+b10100 A
+b10100 =
+1*
+#120000
+0*
+#125000
+b1 ?
+b10 <
+b100 ;
+b11 #
+b11 @
+1!
+b100 B
+1*
+#130000
+0*
+#135000
+b10 ?
+b1 B
+b10 :
+b0 <
+0!
+1*
+#140000
+0*
+#145000
+b11 ?
+b10 $
+b10 >
+b10 B
+1*
+#150000
+0*
+#155000
+b11 B
+b11110 +
+b11110 /
+1*
+#160000
+0*
+#165000
+b100 ?
+b1 <
+b101 ;
+1!
+b100 #
+b100 @
+b11110 "
+b11110 A
+b11110 =
+1*
+#170000
+0*
+#175000
+b1 ?
+b100 B
+b10 <
+b110 ;
+b101 #
+b101 @
+1!
+1*
+#180000
+0*
+#185000
+b10 ?
+b11 :
+b0 <
+0!
+b1 B
+1*
+#190000
+0*
+#195000
+b11 ?
+b10 B
+b11 $
+b11 >
+1*
+#200000
+0*
+#205000
+b11 B
+b101000 +
+b101000 /
+1*
+#210000
+0*
+#215000
+b100 ?
+b1 <
+b111 ;
+1!
+b110 #
+b110 @
+b101000 "
+b101000 A
+b101000 =
+1*
+#220000
+0*
+#225000
+b1 ?
+b10 <
+b1000 ;
+b111 #
+b111 @
+1!
+b100 B
+1*
+#230000
+0*
+#235000
+b10 ?
+b1 B
+b100 :
+b0 <
+0!
+1*
+#240000
+0*
+#245000
+b11 ?
+b100 $
+b100 >
+b10 B
+1*
+#250000
+0*
+#255000
+b11 B
+b110010 +
+b110010 /
+1*
+#260000
+0*
+#265000
+b100 ?
+b1 <
+b1001 ;
+1!
+b1000 #
+b1000 @
+b110010 "
+b110010 A
+b110010 =
+1*
+#270000
+0*
+#275000
+b101 ?
+b100 B
+b10 <
+b1010 ;
+b1001 #
+b1001 @
+1!
+1*
+#280000
+0*
+#285000
+b0 ?
+b101 :
+b0 <
+0!
+b101 B
+1*
+#290000
+0*
+#295000
+b0 B
+0&
+1%
+1*
+#300000
+0*
+#305000
+b0 ;
+b0 :
+0%
+1*
+#310000
+0*
+#315000
+1*
