@@ -15,26 +15,32 @@ module quantizer_32_16 (
     localparam signed [15:0] MIN_OUT = 16'h8000;
 
     // --- Wires untuk Pengecekan Overflow ---
-    // Kita ingin mengambil slice bits [29:14].
-    // Bit [31] adalah sign bit asli.
-    // Bit [30] dan [29] adalah bit integer yang "terancam" terbuang/berubah.
-    // Jika i_acc_raw[31:29] tidak seragam (tidak semua 0 atau tidak semua 1),
-    // berarti nilai integer terlalu besar untuk muat di 4 bit.
+    // Q6.26 input range: -32 to +31.999 (6 bit integer)
+    // Q4.12 output range: -8 to +7.999 (4 bit integer) 
+    //
+    // Kita mengambil bits [29:14] dari input, yang akan menjadi [15:0] output
+    // Bits [31:30] adalah 2 MSB yang akan dibuang
+    //
+    // Untuk tidak overflow:
+    // - Jika input positif (bit31=0): bits[31:29] harus 000 (nilai 0 sampai +7.999)
+    // - Jika input negatif (bit31=1): bits[31:29] harus 111 (nilai -8.0 sampai -0.xxx)
+    //
+    // Jika bits[31:29] bukan 000 atau 111, berarti overflow
     
-    wire [2:0] check_bits;
-    assign check_bits = i_acc_raw[31:29];
+    wire [2:0] top_bits;
+    assign top_bits = i_acc_raw[31:29];
     
-    // Flags
-    wire is_overflow_pos;
-    wire is_overflow_neg;
-
-    // Overflow Positif: Jika sign bit 0, tapi ada bit 1 di sisa integer atas
-    // Contoh: 010... (Nilai positif besar) -> Harus disaturasi ke MAX
-    assign is_overflow_pos = (i_acc_raw[31] == 0) && (check_bits != 3'b000);
-
-    // Overflow Negatif: Jika sign bit 1, tapi ada bit 0 di sisa integer atas
-    // Contoh: 101... (Nilai negatif besar) -> Harus disaturasi ke MIN
-    assign is_overflow_neg = (i_acc_raw[31] == 1) && (check_bits != 3'b111);
+    // Check if value in range
+    wire in_range;
+    assign in_range = (top_bits == 3'b000) || (top_bits == 3'b111);
+    
+    // Overflow flag
+    wire is_overflow;
+    assign is_overflow = !in_range;
+    
+    // Determine saturation direction based on MSB
+    wire saturate_positive;
+    assign saturate_positive = (i_acc_raw[31] == 1'b0);
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -44,16 +50,18 @@ module quantizer_32_16 (
             o_valid_out <= i_valid;
             
             if (i_valid) begin
-                if (is_overflow_pos) begin
-                    o_data <= MAX_OUT; // Clamp ke +7.99
-                end
-                else if (is_overflow_neg) begin
-                    o_data <= MIN_OUT; // Clamp ke -8.00
+                if (is_overflow) begin
+                    // Saturate based on original sign
+                    if (saturate_positive) begin
+                        o_data <= MAX_OUT; // Positive overflow -> +MAX
+                    end else begin
+                        o_data <= MIN_OUT; // Negative overflow -> MIN
+                    end
                 end
                 else begin
                     // Safe Zone: Ambil bit [29:14]
-                    // Ini membuang 14 bit pecahan terbawah (Quantization)
-                    // Dan mengambil 4 bit integer terbawah + 12 bit pecahan
+                    // Truncate 14 LSB (lose fractional precision)
+                    // Keep 4 MSB integer + 12 fractional bits
                     o_data <= i_acc_raw[29:14];
                 end
             end
