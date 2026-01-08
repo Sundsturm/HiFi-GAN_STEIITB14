@@ -1,0 +1,175 @@
+VCD info: dumpfile postnet_fsm_tb.vcd opened for output.
+========================================
+PostNet FSM Testbench Started
+========================================
+NUM_LAYERS = 5
+========================================
+
+[TEST 1] Basic Layer Sequencing
+[ERROR] FSM should be busy during processing
+[T=115000] Layer 0 started
+[T=115000] Stack processing for 50 cycles...
+[T=625000] Stack done signal asserted
+[T=655000] Layer 1 started
+[T=655000] Stack processing for 60 cycles...
+[T=1265000] Stack done signal asserted
+[T=1295000] Layer 2 started
+[T=1295000] Stack processing for 70 cycles...
+[T=2005000] Stack done signal asserted
+[T=2035000] Layer 3 started
+[T=2035000] Stack processing for 80 cycles...
+[T=2845000] Stack done signal asserted
+[T=2875000] Layer 4 started
+[T=2875000] Stack processing for 90 cycles...
+[T=3785000] Stack done signal asserted
+[PASS] All 5 layers processed correctly
+
+[TEST 2] Fast Stack Processing
+[T=3955000] Layer 0 started
+[T=3955000] Stack processing for 5 cycles...
+[T=4015000] Stack done signal asserted
+[T=4045000] Layer 1 started
+[T=4045000] Stack processing for 5 cycles...
+[T=4105000] Stack done signal asserted
+[T=4135000] Layer 2 started
+[T=4135000] Stack processing for 5 cycles...
+[T=4195000] Stack done signal asserted
+[T=4225000] Layer 3 started
+[T=4225000] Stack processing for 5 cycles...
+[T=4285000] Stack done signal asserted
+[T=4315000] Layer 4 started
+[T=4315000] Stack processing for 5 cycles...
+[T=4375000] Stack done signal asserted
+[PASS] Fast processing completed
+
+[TEST 3] Slow Stack Processing
+[T=4535000] Layer 0 started
+[T=4535000] Stack processing for 200 cycles...
+[T=6545000] Stack done signal asserted
+[T=6575000] Layer 1 started
+[T=6575000] Stack processing for 200 cycles...
+[T=8585000] Stack done signal asserted
+[T=8615000] Layer 2 started
+[T=8615000] Stack processing for 200 cycles...
+[T=10625000] Stack done signal asserted
+[T=10655000] Layer 3 started
+[T=10655000] Stack processing for 200 cycles...
+[T=12665000] Stack done signal asserted
+[T=12695000] Layer 4 started
+[T=12695000] Stack processing for 200 cycles...
+[T=14705000] Stack done signal asserted
+[PASS] Slow processing completed
+
+[TEST 4] Back-to-Back Processing Runs
+
+  --- Run 1 ---
+[T=14865000] Layer 0 started
+[T=14865000] Stack processing for 30 cycles...
+[T=15175000] Stack done signal asserted
+[T=15205000] Layer 1 started
+[T=15205000] Stack processing for 30 cycles...
+[T=15515000] Stack done signal asserted
+[T=15545000] Layer 2 started
+[T=15545000] Stack processing for 30 cycles...
+[T=15855000] Stack done signal asserted
+[T=15885000] Layer 3 started
+[T=15885000] Stack processing for 30 cycles...
+[T=16195000] Stack done signal asserted
+[T=16225000] Layer 4 started
+[T=16225000] Stack processing for 30 cycles...
+[T=16535000] Stack done signal asserted
+
+  --- Run 2 ---
+[T=16645000] Layer 0 started
+[T=16645000] Stack processing for 30 cycles...
+[T=16955000] Stack done signal asserted
+[T=16985000] Layer 1 started
+[T=16985000] Stack processing for 30 cycles...
+[T=17295000] Stack done signal asserted
+[T=17325000] Layer 2 started
+[T=17325000] Stack processing for 30 cycles...
+[T=17635000] Stack done signal asserted
+[T=17665000] Layer 3 started
+[T=17665000] Stack processing for 30 cycles...
+[T=17975000] Stack done signal asserted
+[T=18005000] Layer 4 started
+[T=18005000] Stack processing for 30 cycles...
+[T=18315000] Stack done signal asserted
+
+  --- Run 3 ---
+[T=18425000] Layer 0 started
+[T=18425000] Stack processing for 30 cycles...
+[T=18735000] Stack done signal asserted
+[T=18765000] Layer 1 started
+[T=18765000] Stack processing for 30 cycles...
+[T=19075000] Stack done signal asserted
+[T=19105000] Layer 2 started
+[T=19105000] Stack processing for 30 cycles...
+[T=19415000] Stack done signal asserted
+[T=19445000] Layer 3 started
+[T=19445000] Stack processing for 30 cycles...
+[T=19755000] Stack done signal asserted
+[T=19785000] Layer 4 started
+[T=19785000] Stack processing for 30 cycles...
+[T=20095000] Stack done signal asserted
+[PASS] Back-to-back runs completed
+
+[TEST 5] Start Signal During Active Processing
+[T=20305000] Layer 0 started
+[T=20305000] Stack processing for 30 cycles...
+[T=20615000] Stack done signal asserted
+[T=20645000] Layer 1 started
+[T=20645000] Stack processing for 30 cycles...
+[T=20955000] Stack done signal asserted
+[INFO] Sent start signal during processing (should be ignored)
+[T=20985000] Layer 2 started
+[T=20985000] Stack processing for 30 cycles...
+[T=21295000] Stack done signal asserted
+[T=21325000] Layer 3 started
+[T=21325000] Stack processing for 30 cycles...
+[T=21635000] Stack done signal asserted
+[T=21665000] Layer 4 started
+[T=21665000] Stack processing for 30 cycles...
+[T=21975000] Stack done signal asserted
+[PASS] Spurious start signal correctly ignored
+
+[TEST 6] Reset During Active Processing
+[T=22135000] Layer 0 started
+[T=22135000] Stack processing for 30 cycles...
+[T=22445000] Stack done signal asserted
+[T=22475000] Layer 1 started
+[INFO] Asserting reset during layer processing
+[PASS] FSM correctly reset to idle state
+
+[TEST 7] Layer Selection Output Verification
+[INFO] Layer 0: o_layer_sel=0 - CORRECT
+[T=22755000] Layer 0 started
+[T=22755000] Stack processing for 25 cycles...
+[T=23015000] Stack done signal asserted
+[INFO] Layer 1: o_layer_sel=1 - CORRECT
+[T=23045000] Layer 1 started
+[T=23045000] Stack processing for 25 cycles...
+[T=23305000] Stack done signal asserted
+[INFO] Layer 2: o_layer_sel=2 - CORRECT
+[T=23335000] Layer 2 started
+[T=23335000] Stack processing for 25 cycles...
+[T=23595000] Stack done signal asserted
+[INFO] Layer 3: o_layer_sel=3 - CORRECT
+[T=23625000] Layer 3 started
+[T=23625000] Stack processing for 25 cycles...
+[T=23885000] Stack done signal asserted
+[INFO] Layer 4: o_layer_sel=4 - CORRECT
+[T=23915000] Layer 4 started
+[T=23915000] Stack processing for 25 cycles...
+[T=24175000] Stack done signal asserted
+[PASS] Layer selection verification complete
+
+========================================
+PostNet FSM Testbench Summary
+========================================
+Total Test Cases: 7
+Total Errors: 1
+STATUS: FAIL
+========================================
+
+C:/Users/rubin/Documents/Kullyeah/Sem 7/VLSI/TUBES/Kode/src/rtl/postnet/tb/postnet_fsm_tb.v:393: $finish called at 24495000 (1ps)
