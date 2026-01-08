@@ -19,13 +19,16 @@
 //
 // Memory Organization:
 //   - Linear addressing: biases stored sequentially
-//   - Address calculation: bias[layer][ch_out] = layer_offset + ch_out
+//   - Generated from CSV using generate_memory_files.py
+//   - Default depth supports full HiFi-GAN model (1,825 biases)
+//   - Use hifigan_addr_map.vh for layer address constants
 //==============================================================================
 
 module bias_mem #(
-    parameter DATA_WIDTH = 16,              // Bias bit width (Q4.12)
-    parameter DEPTH      = 512,             // Memory depth (words)
-    parameter MEM_FILE   = "biases.mem"     // Initialization file
+    parameter DATA_WIDTH = 16,                  // Bias bit width (Q4.12)
+    parameter DEPTH      = 1825,                // Memory depth (words) - full HiFiGAN
+    parameter MEM_FILE   = "biases.mem",        // Initialization file
+    parameter ADDR_CHECK = 0                    // Enable address range checking (debug)
 )(
     input wire                          clk,
     input wire                          rst_n,

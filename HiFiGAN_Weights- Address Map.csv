@@ -1,0 +1,70 @@
+Layer Name,Start Address,End Address,Count,Shape
+conv_pre.bias,0,255,256,[256]
+conv_pre.weight_g,256,511,256,"[256, 1, 1]"
+conv_pre.weight_v,512,143871,143360,"[256, 80, 7]"
+ups.0.bias,143872,143999,128,[128]
+ups.0.weight_g,144000,144255,256,"[256, 1, 1]"
+ups.0.weight_v,144256,668543,524288,"[256, 128, 16]"
+ups.1.bias,668544,668607,64,[64]
+ups.1.weight_g,668608,668735,128,"[128, 1, 1]"
+ups.1.weight_v,668736,799807,131072,"[128, 64, 16]"
+ups.2.bias,799808,799839,32,[32]
+ups.2.weight_g,799840,799903,64,"[64, 1, 1]"
+ups.2.weight_v,799904,816287,16384,"[64, 32, 8]"
+resblocks.0.convs.0.bias,816288,816415,128,[128]
+resblocks.0.convs.0.weight_g,816416,816543,128,"[128, 1, 1]"
+resblocks.0.convs.0.weight_v,816544,865695,49152,"[128, 128, 3]"
+resblocks.0.convs.1.bias,865696,865823,128,[128]
+resblocks.0.convs.1.weight_g,865824,865951,128,"[128, 1, 1]"
+resblocks.0.convs.1.weight_v,865952,915103,49152,"[128, 128, 3]"
+resblocks.1.convs.0.bias,915104,915231,128,[128]
+resblocks.1.convs.0.weight_g,915232,915359,128,"[128, 1, 1]"
+resblocks.1.convs.0.weight_v,915360,997279,81920,"[128, 128, 5]"
+resblocks.1.convs.1.bias,997280,997407,128,[128]
+resblocks.1.convs.1.weight_g,997408,997535,128,"[128, 1, 1]"
+resblocks.1.convs.1.weight_v,997536,1079455,81920,"[128, 128, 5]"
+resblocks.2.convs.0.bias,1079456,1079583,128,[128]
+resblocks.2.convs.0.weight_g,1079584,1079711,128,"[128, 1, 1]"
+resblocks.2.convs.0.weight_v,1079712,1194399,114688,"[128, 128, 7]"
+resblocks.2.convs.1.bias,1194400,1194527,128,[128]
+resblocks.2.convs.1.weight_g,1194528,1194655,128,"[128, 1, 1]"
+resblocks.2.convs.1.weight_v,1194656,1309343,114688,"[128, 128, 7]"
+resblocks.3.convs.0.bias,1309344,1309407,64,[64]
+resblocks.3.convs.0.weight_g,1309408,1309471,64,"[64, 1, 1]"
+resblocks.3.convs.0.weight_v,1309472,1321759,12288,"[64, 64, 3]"
+resblocks.3.convs.1.bias,1321760,1321823,64,[64]
+resblocks.3.convs.1.weight_g,1321824,1321887,64,"[64, 1, 1]"
+resblocks.3.convs.1.weight_v,1321888,1334175,12288,"[64, 64, 3]"
+resblocks.4.convs.0.bias,1334176,1334239,64,[64]
+resblocks.4.convs.0.weight_g,1334240,1334303,64,"[64, 1, 1]"
+resblocks.4.convs.0.weight_v,1334304,1354783,20480,"[64, 64, 5]"
+resblocks.4.convs.1.bias,1354784,1354847,64,[64]
+resblocks.4.convs.1.weight_g,1354848,1354911,64,"[64, 1, 1]"
+resblocks.4.convs.1.weight_v,1354912,1375391,20480,"[64, 64, 5]"
+resblocks.5.convs.0.bias,1375392,1375455,64,[64]
+resblocks.5.convs.0.weight_g,1375456,1375519,64,"[64, 1, 1]"
+resblocks.5.convs.0.weight_v,1375520,1404191,28672,"[64, 64, 7]"
+resblocks.5.convs.1.bias,1404192,1404255,64,[64]
+resblocks.5.convs.1.weight_g,1404256,1404319,64,"[64, 1, 1]"
+resblocks.5.convs.1.weight_v,1404320,1432991,28672,"[64, 64, 7]"
+resblocks.6.convs.0.bias,1432992,1433023,32,[32]
+resblocks.6.convs.0.weight_g,1433024,1433055,32,"[32, 1, 1]"
+resblocks.6.convs.0.weight_v,1433056,1436127,3072,"[32, 32, 3]"
+resblocks.6.convs.1.bias,1436128,1436159,32,[32]
+resblocks.6.convs.1.weight_g,1436160,1436191,32,"[32, 1, 1]"
+resblocks.6.convs.1.weight_v,1436192,1439263,3072,"[32, 32, 3]"
+resblocks.7.convs.0.bias,1439264,1439295,32,[32]
+resblocks.7.convs.0.weight_g,1439296,1439327,32,"[32, 1, 1]"
+resblocks.7.convs.0.weight_v,1439328,1444447,5120,"[32, 32, 5]"
+resblocks.7.convs.1.bias,1444448,1444479,32,[32]
+resblocks.7.convs.1.weight_g,1444480,1444511,32,"[32, 1, 1]"
+resblocks.7.convs.1.weight_v,1444512,1449631,5120,"[32, 32, 5]"
+resblocks.8.convs.0.bias,1449632,1449663,32,[32]
+resblocks.8.convs.0.weight_g,1449664,1449695,32,"[32, 1, 1]"
+resblocks.8.convs.0.weight_v,1449696,1456863,7168,"[32, 32, 7]"
+resblocks.8.convs.1.bias,1456864,1456895,32,[32]
+resblocks.8.convs.1.weight_g,1456896,1456927,32,"[32, 1, 1]"
+resblocks.8.convs.1.weight_v,1456928,1464095,7168,"[32, 32, 7]"
+conv_post.bias,1464096,1464096,1,[1]
+conv_post.weight_g,1464097,1464097,1,"[1, 1, 1]"
+conv_post.weight_v,1464098,1464321,224,"[1, 32, 7]"
