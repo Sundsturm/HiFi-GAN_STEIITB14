@@ -1,0 +1,311 @@
+//==============================================================================
+// HiFi-GAN Address Map
+// Auto-generated from CSV files
+// DO NOT EDIT MANUALLY
+//==============================================================================
+
+`ifndef HIFIGAN_ADDR_MAP_VH
+`define HIFIGAN_ADDR_MAP_VH
+
+// Total parameter memory size
+localparam HIFIGAN_TOTAL_PARAMS = 1464322;
+localparam HIFIGAN_ADDR_WIDTH   = 21;
+
+// Layer address ranges
+localparam CONV_PRE_BIAS_START =      0;
+localparam CONV_PRE_BIAS_END   =    255;
+localparam CONV_PRE_BIAS_COUNT =    256; // Shape: [256]
+
+localparam CONV_PRE_WEIGHT_G_START =    256;
+localparam CONV_PRE_WEIGHT_G_END   =    511;
+localparam CONV_PRE_WEIGHT_G_COUNT =    256; // Shape: [256, 1, 1]
+
+localparam CONV_PRE_WEIGHT_V_START =    512;
+localparam CONV_PRE_WEIGHT_V_END   = 143871;
+localparam CONV_PRE_WEIGHT_V_COUNT = 143360; // Shape: [256, 80, 7]
+
+localparam UPS_0_BIAS_START = 143872;
+localparam UPS_0_BIAS_END   = 143999;
+localparam UPS_0_BIAS_COUNT =    128; // Shape: [128]
+
+localparam UPS_0_WEIGHT_G_START = 144000;
+localparam UPS_0_WEIGHT_G_END   = 144255;
+localparam UPS_0_WEIGHT_G_COUNT =    256; // Shape: [256, 1, 1]
+
+localparam UPS_0_WEIGHT_V_START = 144256;
+localparam UPS_0_WEIGHT_V_END   = 668543;
+localparam UPS_0_WEIGHT_V_COUNT = 524288; // Shape: [256, 128, 16]
+
+localparam UPS_1_BIAS_START = 668544;
+localparam UPS_1_BIAS_END   = 668607;
+localparam UPS_1_BIAS_COUNT =     64; // Shape: [64]
+
+localparam UPS_1_WEIGHT_G_START = 668608;
+localparam UPS_1_WEIGHT_G_END   = 668735;
+localparam UPS_1_WEIGHT_G_COUNT =    128; // Shape: [128, 1, 1]
+
+localparam UPS_1_WEIGHT_V_START = 668736;
+localparam UPS_1_WEIGHT_V_END   = 799807;
+localparam UPS_1_WEIGHT_V_COUNT = 131072; // Shape: [128, 64, 16]
+
+localparam UPS_2_BIAS_START = 799808;
+localparam UPS_2_BIAS_END   = 799839;
+localparam UPS_2_BIAS_COUNT =     32; // Shape: [32]
+
+localparam UPS_2_WEIGHT_G_START = 799840;
+localparam UPS_2_WEIGHT_G_END   = 799903;
+localparam UPS_2_WEIGHT_G_COUNT =     64; // Shape: [64, 1, 1]
+
+localparam UPS_2_WEIGHT_V_START = 799904;
+localparam UPS_2_WEIGHT_V_END   = 816287;
+localparam UPS_2_WEIGHT_V_COUNT =  16384; // Shape: [64, 32, 8]
+
+localparam RESBLOCKS_0_CONVS_0_BIAS_START = 816288;
+localparam RESBLOCKS_0_CONVS_0_BIAS_END   = 816415;
+localparam RESBLOCKS_0_CONVS_0_BIAS_COUNT =    128; // Shape: [128]
+
+localparam RESBLOCKS_0_CONVS_0_WEIGHT_G_START = 816416;
+localparam RESBLOCKS_0_CONVS_0_WEIGHT_G_END   = 816543;
+localparam RESBLOCKS_0_CONVS_0_WEIGHT_G_COUNT =    128; // Shape: [128, 1, 1]
+
+localparam RESBLOCKS_0_CONVS_0_WEIGHT_V_START = 816544;
+localparam RESBLOCKS_0_CONVS_0_WEIGHT_V_END   = 865695;
+localparam RESBLOCKS_0_CONVS_0_WEIGHT_V_COUNT =  49152; // Shape: [128, 128, 3]
+
+localparam RESBLOCKS_0_CONVS_1_BIAS_START = 865696;
+localparam RESBLOCKS_0_CONVS_1_BIAS_END   = 865823;
+localparam RESBLOCKS_0_CONVS_1_BIAS_COUNT =    128; // Shape: [128]
+
+localparam RESBLOCKS_0_CONVS_1_WEIGHT_G_START = 865824;
+localparam RESBLOCKS_0_CONVS_1_WEIGHT_G_END   = 865951;
+localparam RESBLOCKS_0_CONVS_1_WEIGHT_G_COUNT =    128; // Shape: [128, 1, 1]
+
+localparam RESBLOCKS_0_CONVS_1_WEIGHT_V_START = 865952;
+localparam RESBLOCKS_0_CONVS_1_WEIGHT_V_END   = 915103;
+localparam RESBLOCKS_0_CONVS_1_WEIGHT_V_COUNT =  49152; // Shape: [128, 128, 3]
+
+localparam RESBLOCKS_1_CONVS_0_BIAS_START = 915104;
+localparam RESBLOCKS_1_CONVS_0_BIAS_END   = 915231;
+localparam RESBLOCKS_1_CONVS_0_BIAS_COUNT =    128; // Shape: [128]
+
+localparam RESBLOCKS_1_CONVS_0_WEIGHT_G_START = 915232;
+localparam RESBLOCKS_1_CONVS_0_WEIGHT_G_END   = 915359;
+localparam RESBLOCKS_1_CONVS_0_WEIGHT_G_COUNT =    128; // Shape: [128, 1, 1]
+
+localparam RESBLOCKS_1_CONVS_0_WEIGHT_V_START = 915360;
+localparam RESBLOCKS_1_CONVS_0_WEIGHT_V_END   = 997279;
+localparam RESBLOCKS_1_CONVS_0_WEIGHT_V_COUNT =  81920; // Shape: [128, 128, 5]
+
+localparam RESBLOCKS_1_CONVS_1_BIAS_START = 997280;
+localparam RESBLOCKS_1_CONVS_1_BIAS_END   = 997407;
+localparam RESBLOCKS_1_CONVS_1_BIAS_COUNT =    128; // Shape: [128]
+
+localparam RESBLOCKS_1_CONVS_1_WEIGHT_G_START = 997408;
+localparam RESBLOCKS_1_CONVS_1_WEIGHT_G_END   = 997535;
+localparam RESBLOCKS_1_CONVS_1_WEIGHT_G_COUNT =    128; // Shape: [128, 1, 1]
+
+localparam RESBLOCKS_1_CONVS_1_WEIGHT_V_START = 997536;
+localparam RESBLOCKS_1_CONVS_1_WEIGHT_V_END   = 1079455;
+localparam RESBLOCKS_1_CONVS_1_WEIGHT_V_COUNT =  81920; // Shape: [128, 128, 5]
+
+localparam RESBLOCKS_2_CONVS_0_BIAS_START = 1079456;
+localparam RESBLOCKS_2_CONVS_0_BIAS_END   = 1079583;
+localparam RESBLOCKS_2_CONVS_0_BIAS_COUNT =    128; // Shape: [128]
+
+localparam RESBLOCKS_2_CONVS_0_WEIGHT_G_START = 1079584;
+localparam RESBLOCKS_2_CONVS_0_WEIGHT_G_END   = 1079711;
+localparam RESBLOCKS_2_CONVS_0_WEIGHT_G_COUNT =    128; // Shape: [128, 1, 1]
+
+localparam RESBLOCKS_2_CONVS_0_WEIGHT_V_START = 1079712;
+localparam RESBLOCKS_2_CONVS_0_WEIGHT_V_END   = 1194399;
+localparam RESBLOCKS_2_CONVS_0_WEIGHT_V_COUNT = 114688; // Shape: [128, 128, 7]
+
+localparam RESBLOCKS_2_CONVS_1_BIAS_START = 1194400;
+localparam RESBLOCKS_2_CONVS_1_BIAS_END   = 1194527;
+localparam RESBLOCKS_2_CONVS_1_BIAS_COUNT =    128; // Shape: [128]
+
+localparam RESBLOCKS_2_CONVS_1_WEIGHT_G_START = 1194528;
+localparam RESBLOCKS_2_CONVS_1_WEIGHT_G_END   = 1194655;
+localparam RESBLOCKS_2_CONVS_1_WEIGHT_G_COUNT =    128; // Shape: [128, 1, 1]
+
+localparam RESBLOCKS_2_CONVS_1_WEIGHT_V_START = 1194656;
+localparam RESBLOCKS_2_CONVS_1_WEIGHT_V_END   = 1309343;
+localparam RESBLOCKS_2_CONVS_1_WEIGHT_V_COUNT = 114688; // Shape: [128, 128, 7]
+
+localparam RESBLOCKS_3_CONVS_0_BIAS_START = 1309344;
+localparam RESBLOCKS_3_CONVS_0_BIAS_END   = 1309407;
+localparam RESBLOCKS_3_CONVS_0_BIAS_COUNT =     64; // Shape: [64]
+
+localparam RESBLOCKS_3_CONVS_0_WEIGHT_G_START = 1309408;
+localparam RESBLOCKS_3_CONVS_0_WEIGHT_G_END   = 1309471;
+localparam RESBLOCKS_3_CONVS_0_WEIGHT_G_COUNT =     64; // Shape: [64, 1, 1]
+
+localparam RESBLOCKS_3_CONVS_0_WEIGHT_V_START = 1309472;
+localparam RESBLOCKS_3_CONVS_0_WEIGHT_V_END   = 1321759;
+localparam RESBLOCKS_3_CONVS_0_WEIGHT_V_COUNT =  12288; // Shape: [64, 64, 3]
+
+localparam RESBLOCKS_3_CONVS_1_BIAS_START = 1321760;
+localparam RESBLOCKS_3_CONVS_1_BIAS_END   = 1321823;
+localparam RESBLOCKS_3_CONVS_1_BIAS_COUNT =     64; // Shape: [64]
+
+localparam RESBLOCKS_3_CONVS_1_WEIGHT_G_START = 1321824;
+localparam RESBLOCKS_3_CONVS_1_WEIGHT_G_END   = 1321887;
+localparam RESBLOCKS_3_CONVS_1_WEIGHT_G_COUNT =     64; // Shape: [64, 1, 1]
+
+localparam RESBLOCKS_3_CONVS_1_WEIGHT_V_START = 1321888;
+localparam RESBLOCKS_3_CONVS_1_WEIGHT_V_END   = 1334175;
+localparam RESBLOCKS_3_CONVS_1_WEIGHT_V_COUNT =  12288; // Shape: [64, 64, 3]
+
+localparam RESBLOCKS_4_CONVS_0_BIAS_START = 1334176;
+localparam RESBLOCKS_4_CONVS_0_BIAS_END   = 1334239;
+localparam RESBLOCKS_4_CONVS_0_BIAS_COUNT =     64; // Shape: [64]
+
+localparam RESBLOCKS_4_CONVS_0_WEIGHT_G_START = 1334240;
+localparam RESBLOCKS_4_CONVS_0_WEIGHT_G_END   = 1334303;
+localparam RESBLOCKS_4_CONVS_0_WEIGHT_G_COUNT =     64; // Shape: [64, 1, 1]
+
+localparam RESBLOCKS_4_CONVS_0_WEIGHT_V_START = 1334304;
+localparam RESBLOCKS_4_CONVS_0_WEIGHT_V_END   = 1354783;
+localparam RESBLOCKS_4_CONVS_0_WEIGHT_V_COUNT =  20480; // Shape: [64, 64, 5]
+
+localparam RESBLOCKS_4_CONVS_1_BIAS_START = 1354784;
+localparam RESBLOCKS_4_CONVS_1_BIAS_END   = 1354847;
+localparam RESBLOCKS_4_CONVS_1_BIAS_COUNT =     64; // Shape: [64]
+
+localparam RESBLOCKS_4_CONVS_1_WEIGHT_G_START = 1354848;
+localparam RESBLOCKS_4_CONVS_1_WEIGHT_G_END   = 1354911;
+localparam RESBLOCKS_4_CONVS_1_WEIGHT_G_COUNT =     64; // Shape: [64, 1, 1]
+
+localparam RESBLOCKS_4_CONVS_1_WEIGHT_V_START = 1354912;
+localparam RESBLOCKS_4_CONVS_1_WEIGHT_V_END   = 1375391;
+localparam RESBLOCKS_4_CONVS_1_WEIGHT_V_COUNT =  20480; // Shape: [64, 64, 5]
+
+localparam RESBLOCKS_5_CONVS_0_BIAS_START = 1375392;
+localparam RESBLOCKS_5_CONVS_0_BIAS_END   = 1375455;
+localparam RESBLOCKS_5_CONVS_0_BIAS_COUNT =     64; // Shape: [64]
+
+localparam RESBLOCKS_5_CONVS_0_WEIGHT_G_START = 1375456;
+localparam RESBLOCKS_5_CONVS_0_WEIGHT_G_END   = 1375519;
+localparam RESBLOCKS_5_CONVS_0_WEIGHT_G_COUNT =     64; // Shape: [64, 1, 1]
+
+localparam RESBLOCKS_5_CONVS_0_WEIGHT_V_START = 1375520;
+localparam RESBLOCKS_5_CONVS_0_WEIGHT_V_END   = 1404191;
+localparam RESBLOCKS_5_CONVS_0_WEIGHT_V_COUNT =  28672; // Shape: [64, 64, 7]
+
+localparam RESBLOCKS_5_CONVS_1_BIAS_START = 1404192;
+localparam RESBLOCKS_5_CONVS_1_BIAS_END   = 1404255;
+localparam RESBLOCKS_5_CONVS_1_BIAS_COUNT =     64; // Shape: [64]
+
+localparam RESBLOCKS_5_CONVS_1_WEIGHT_G_START = 1404256;
+localparam RESBLOCKS_5_CONVS_1_WEIGHT_G_END   = 1404319;
+localparam RESBLOCKS_5_CONVS_1_WEIGHT_G_COUNT =     64; // Shape: [64, 1, 1]
+
+localparam RESBLOCKS_5_CONVS_1_WEIGHT_V_START = 1404320;
+localparam RESBLOCKS_5_CONVS_1_WEIGHT_V_END   = 1432991;
+localparam RESBLOCKS_5_CONVS_1_WEIGHT_V_COUNT =  28672; // Shape: [64, 64, 7]
+
+localparam RESBLOCKS_6_CONVS_0_BIAS_START = 1432992;
+localparam RESBLOCKS_6_CONVS_0_BIAS_END   = 1433023;
+localparam RESBLOCKS_6_CONVS_0_BIAS_COUNT =     32; // Shape: [32]
+
+localparam RESBLOCKS_6_CONVS_0_WEIGHT_G_START = 1433024;
+localparam RESBLOCKS_6_CONVS_0_WEIGHT_G_END   = 1433055;
+localparam RESBLOCKS_6_CONVS_0_WEIGHT_G_COUNT =     32; // Shape: [32, 1, 1]
+
+localparam RESBLOCKS_6_CONVS_0_WEIGHT_V_START = 1433056;
+localparam RESBLOCKS_6_CONVS_0_WEIGHT_V_END   = 1436127;
+localparam RESBLOCKS_6_CONVS_0_WEIGHT_V_COUNT =   3072; // Shape: [32, 32, 3]
+
+localparam RESBLOCKS_6_CONVS_1_BIAS_START = 1436128;
+localparam RESBLOCKS_6_CONVS_1_BIAS_END   = 1436159;
+localparam RESBLOCKS_6_CONVS_1_BIAS_COUNT =     32; // Shape: [32]
+
+localparam RESBLOCKS_6_CONVS_1_WEIGHT_G_START = 1436160;
+localparam RESBLOCKS_6_CONVS_1_WEIGHT_G_END   = 1436191;
+localparam RESBLOCKS_6_CONVS_1_WEIGHT_G_COUNT =     32; // Shape: [32, 1, 1]
+
+localparam RESBLOCKS_6_CONVS_1_WEIGHT_V_START = 1436192;
+localparam RESBLOCKS_6_CONVS_1_WEIGHT_V_END   = 1439263;
+localparam RESBLOCKS_6_CONVS_1_WEIGHT_V_COUNT =   3072; // Shape: [32, 32, 3]
+
+localparam RESBLOCKS_7_CONVS_0_BIAS_START = 1439264;
+localparam RESBLOCKS_7_CONVS_0_BIAS_END   = 1439295;
+localparam RESBLOCKS_7_CONVS_0_BIAS_COUNT =     32; // Shape: [32]
+
+localparam RESBLOCKS_7_CONVS_0_WEIGHT_G_START = 1439296;
+localparam RESBLOCKS_7_CONVS_0_WEIGHT_G_END   = 1439327;
+localparam RESBLOCKS_7_CONVS_0_WEIGHT_G_COUNT =     32; // Shape: [32, 1, 1]
+
+localparam RESBLOCKS_7_CONVS_0_WEIGHT_V_START = 1439328;
+localparam RESBLOCKS_7_CONVS_0_WEIGHT_V_END   = 1444447;
+localparam RESBLOCKS_7_CONVS_0_WEIGHT_V_COUNT =   5120; // Shape: [32, 32, 5]
+
+localparam RESBLOCKS_7_CONVS_1_BIAS_START = 1444448;
+localparam RESBLOCKS_7_CONVS_1_BIAS_END   = 1444479;
+localparam RESBLOCKS_7_CONVS_1_BIAS_COUNT =     32; // Shape: [32]
+
+localparam RESBLOCKS_7_CONVS_1_WEIGHT_G_START = 1444480;
+localparam RESBLOCKS_7_CONVS_1_WEIGHT_G_END   = 1444511;
+localparam RESBLOCKS_7_CONVS_1_WEIGHT_G_COUNT =     32; // Shape: [32, 1, 1]
+
+localparam RESBLOCKS_7_CONVS_1_WEIGHT_V_START = 1444512;
+localparam RESBLOCKS_7_CONVS_1_WEIGHT_V_END   = 1449631;
+localparam RESBLOCKS_7_CONVS_1_WEIGHT_V_COUNT =   5120; // Shape: [32, 32, 5]
+
+localparam RESBLOCKS_8_CONVS_0_BIAS_START = 1449632;
+localparam RESBLOCKS_8_CONVS_0_BIAS_END   = 1449663;
+localparam RESBLOCKS_8_CONVS_0_BIAS_COUNT =     32; // Shape: [32]
+
+localparam RESBLOCKS_8_CONVS_0_WEIGHT_G_START = 1449664;
+localparam RESBLOCKS_8_CONVS_0_WEIGHT_G_END   = 1449695;
+localparam RESBLOCKS_8_CONVS_0_WEIGHT_G_COUNT =     32; // Shape: [32, 1, 1]
+
+localparam RESBLOCKS_8_CONVS_0_WEIGHT_V_START = 1449696;
+localparam RESBLOCKS_8_CONVS_0_WEIGHT_V_END   = 1456863;
+localparam RESBLOCKS_8_CONVS_0_WEIGHT_V_COUNT =   7168; // Shape: [32, 32, 7]
+
+localparam RESBLOCKS_8_CONVS_1_BIAS_START = 1456864;
+localparam RESBLOCKS_8_CONVS_1_BIAS_END   = 1456895;
+localparam RESBLOCKS_8_CONVS_1_BIAS_COUNT =     32; // Shape: [32]
+
+localparam RESBLOCKS_8_CONVS_1_WEIGHT_G_START = 1456896;
+localparam RESBLOCKS_8_CONVS_1_WEIGHT_G_END   = 1456927;
+localparam RESBLOCKS_8_CONVS_1_WEIGHT_G_COUNT =     32; // Shape: [32, 1, 1]
+
+localparam RESBLOCKS_8_CONVS_1_WEIGHT_V_START = 1456928;
+localparam RESBLOCKS_8_CONVS_1_WEIGHT_V_END   = 1464095;
+localparam RESBLOCKS_8_CONVS_1_WEIGHT_V_COUNT =   7168; // Shape: [32, 32, 7]
+
+localparam CONV_POST_BIAS_START = 1464096;
+localparam CONV_POST_BIAS_END   = 1464096;
+localparam CONV_POST_BIAS_COUNT =      1; // Shape: [1]
+
+localparam CONV_POST_WEIGHT_G_START = 1464097;
+localparam CONV_POST_WEIGHT_G_END   = 1464097;
+localparam CONV_POST_WEIGHT_G_COUNT =      1; // Shape: [1, 1, 1]
+
+localparam CONV_POST_WEIGHT_V_START = 1464098;
+localparam CONV_POST_WEIGHT_V_END   = 1464321;
+localparam CONV_POST_WEIGHT_V_COUNT =    224; // Shape: [1, 32, 7]
+
+//==============================================================================
+// Organized by functional blocks
+//==============================================================================
+
+// Pre-convolution layer
+localparam CONV_PRE_START = 0;
+localparam CONV_PRE_END   = 143871;
+
+// Upsampler blocks
+localparam UPS_START = 143872;
+localparam UPS_END   = 816287;
+
+// Residual blocks
+localparam RESBLOCKS_START = 816288;
+localparam RESBLOCKS_END   = 1464095;
+
+// Post-convolution layer
+localparam CONV_POST_START = 1464096;
+localparam CONV_POST_END   = 1464321;
+
+`endif // HIFIGAN_ADDR_MAP_VH

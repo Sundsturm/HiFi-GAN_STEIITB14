@@ -19,15 +19,17 @@
 //
 // Memory Organization:
 //   - Linear addressing: weights stored sequentially
-//   - Address calculation done by caller (FSM)
-//   - Example: weight[layer][ch_out][ch_in][k_pos] = addr
-//     where addr = layer_offset + ch_out*CH_IN*K_SIZE + ch_in*K_SIZE + k_pos
+//   - Address calculation done by caller (FSM) or address calculator
+//   - Generated from CSV using generate_memory_files.py
+//   - Default depth supports full HiFi-GAN model (1,462,497 weights)
+//   - Use hifigan_addr_map.vh for layer address constants
 //==============================================================================
 
 module weight_mem #(
-    parameter DATA_WIDTH = 16,              // Weight bit width (Q2.14)
-    parameter DEPTH      = 8192,            // Memory depth (words)
-    parameter MEM_FILE   = "weights.mem"    // Initialization file
+    parameter DATA_WIDTH = 16,                  // Weight bit width (Q2.14)
+    parameter DEPTH      = 1462497,             // Memory depth (words) - full HiFiGAN
+    parameter MEM_FILE   = "weights.mem",       // Initialization file
+    parameter ADDR_CHECK = 0                    // Enable address range checking (debug)
 )(
     input wire                          clk,
     input wire                          rst_n,
@@ -65,7 +67,14 @@ module weight_mem #(
             o_valid <= i_rd_en;
             
             if (i_rd_en) begin
-                o_data <= mem[i_addr];
+                // Address range checking (optional, for debug)
+                if (ADDR_CHECK && i_addr >= DEPTH) begin
+                    $display("[ERROR] weight_mem: Address out of range: %d >= %d", i_addr, DEPTH);
+                    o_data <= {DATA_WIDTH{1'b0}};
+                end
+                else begin
+                    o_data <= mem[i_addr];
+                end
             end
         end
     end
