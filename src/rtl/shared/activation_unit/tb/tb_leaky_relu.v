@@ -15,15 +15,23 @@ module tb_leaky_relu;
         $dumpvars(0, tb_leaky_relu);
 
         $display("Testing Leaky ReLU");
-        $display("   x (dec)    ->    y (dec)");
+        $display("   x (dec)    ->    y (dec)     Expected");
 
-        x = 16'sh0000;  #10;  $display("%d -> %d", x, y);   // 0
-        x = 16'sh2000;  #10;  $display("%d -> %d", x, y);   // +0.25
-        x = 16'sh4000;  #10;  $display("%d -> %d", x, y);   // +0.5
-        x = 16'sh7FFF;  #10;  $display("%d -> %d", x, y);   // ~1
-        x = -16'sh2000; #10;  $display("%d -> %d", x, y);   // -0.25
-        x = -16'sh4000; #10;  $display("%d -> %d", x, y);   // -0.5
-        x = -16'sh7FFF; #10;  $display("%d -> %d", x, y);   // -1
+        // Test zero
+        x = 16'sh0000;  #10;  $display("%d -> %d     (0)", x, y);
+
+        // Test positive values (should pass through)
+        x = 16'sh1000;  #10;  $display("%d -> %d     (4096)", x, y);
+        x = 16'sh2000;  #10;  $display("%d -> %d     (8192)", x, y);
+        x = 16'sh4000;  #10;  $display("%d -> %d     (16384)", x, y);
+        x = 16'sh7FFF;  #10;  $display("%d -> %d     (32767)", x, y);
+
+        // Test negative values (should be divided by 8)
+        x = -16'sh0800; #10;  $display("%d -> %d     (-256)", x, y);   // -2048 / 8 = -256
+        x = -16'sh1000; #10;  $display("%d -> %d     (-512)", x, y);   // -4096 / 8 = -512
+        x = -16'sh2000; #10;  $display("%d -> %d     (-1024)", x, y);  // -8192 / 8 = -1024
+        x = -16'sh4000; #10;  $display("%d -> %d     (-2048)", x, y);  // -16384 / 8 = -2048
+        x = -16'sh7FFF; #10;  $display("%d -> %d     (-4096)", x, y);  // -32767 / 8 = -4095.875 ≈ -4096
 
         $finish;
     end
