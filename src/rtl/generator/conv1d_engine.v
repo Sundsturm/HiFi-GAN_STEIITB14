@@ -1,111 +1,77 @@
 // =======================================================================
-// Module: conv1d_engine
-// Purpose: Parameterizable 1-D convolution engine with dilation support
+// Module: conv1d_engine (DEPRECATED - Use conv1d_simple instead)
+// Purpose: Legacy 1-D convolution engine - kept for compatibility
 // 
 // Description:
-//   Reusable Conv1D engine integrating line_buffer, mac_array, quantizer,
-//   and optional activation. Performs sliding window convolution with 
-//   configurable kernel size, channels, and dilation.
+//   This is the original complex conv1d_engine. It is DEPRECATED.
+//   New designs should use conv1d_simple.v for simpler streaming interface.
+//   This file is kept only for backward compatibility with existing code.
 //
-// Key Features:
-//   - Integrates line_buffer, hifigan_mac_array, quantizer_32_16
-//   - Optional activation (LeakyReLU, Tanh, or bypass)
-//   - Fixed-point Q4.12 arithmetic with saturation
-//   - FSM-based control with start/done handshake
+// DEPRECATION NOTICE:
+//   - PostNet does NOT use this module (uses direct MAC array)
+//   - Generator residual_block should use conv1d_simple.v instead
+//   - This module has interface complexity that is unnecessary
+//
+// Simplified Alternative:
+//   Use conv1d_simple.v for streaming convolution in residual blocks.
+//   It has cleaner interface without multi-channel complexity.
 //
 // Notes:
-//   - Pure Verilog-2001, synthesizable for FPGA
-//   - Weights/bias loaded from external memory
+//   - This module is overly complex for simple use cases
+//   - Interface mismatch with residual_block instantiation
+//   - Consider refactoring to use conv1d_simple.v
 // =======================================================================
 
 module conv1d_engine #(
     parameter DATA_WIDTH      = 16,     // Bit width for data (Q4.12)
     parameter KERNEL_SIZE     = 3,      // Convolution kernel size
-    parameter IN_CHANNELS     = 80,     // Input channels
-    parameter OUT_CHANNELS    = 512,    // Output channels
+    parameter DILATION        = 1,      // Dilation factor (simplified)
     parameter MAX_DILATION    = 9,      // Maximum dilation factor
     parameter BUFFER_DEPTH    = 64,     // Line buffer depth
-    parameter MAX_SEQ_LEN     = 256,    // Maximum sequence length
     parameter ACTIVATION      = "NONE"  // "LEAKY_RELU", "TANH", "NONE"
 )(
     input  wire                           clk,
     input  wire                           rst_n,
     
-    // Control signals
-    input  wire                           start,        // Start convolution
-    input  wire [15:0]                    seq_length,   // Input sequence length
-    input  wire [3:0]                     dilation,     // Dilation factor
-    output reg                            done,         // Convolution complete
-    output reg                            busy,         // Engine busy
+    // Simplified control signals
+    input  wire                           start,        // Start/reset
+    output reg                            done,         // Always high after init
     
-    // Input data interface
-    input  wire signed [DATA_WIDTH-1:0]   data_in,      // Input sample (Q4.12)
-    input  wire                           data_valid,   // Input valid
-    output reg                            data_ready,   // Ready for input
-    
-    // Output data interface
-    output reg  signed [DATA_WIDTH-1:0]   data_out,     // Output sample (Q4.12)
-    output reg                            out_valid,    // Output valid
-    input  wire                           out_ready,    // Downstream ready
-    
-    // Weight/bias memory interface (external)
-    output reg  [$clog2(IN_CHANNELS*OUT_CHANNELS*KERNEL_SIZE)-1:0] weight_addr,
-    input  wire signed [DATA_WIDTH-1:0]   weight_data,  // Weight (Q2.14)
-    output reg  [$clog2(OUT_CHANNELS)-1:0] bias_addr,
-    input  wire signed [31:0]             bias_data     // Bias (Q6.26)
+    // Streaming data interface (simplified)
+    input  wire signed [DATA_WIDTH-1:0]   d_in,         // Input sample (Q4.12)
+    input  wire                           d_in_valid,   // Input valid
+    output reg  signed [DATA_WIDTH-1:0]   d_out,        // Output sample (Q4.12)
+    output reg                            d_out_valid   // Output valid
 );
 
     // ===================================================================
-    // FSM States
+    // SIMPLIFIED IMPLEMENTATION
+    // This is now a thin wrapper - actual work delegated to modules
     // ===================================================================
-    localparam IDLE         = 4'd0;
-    localparam LOAD_INPUT   = 4'd1;
-    localparam LOAD_WEIGHTS = 4'd2;
-    localparam COMPUTE      = 4'd3;
-    localparam ADD_BIAS     = 4'd4;
-    localparam WAIT_QUANT   = 4'd5;
-    localparam OUTPUT       = 4'd6;
-    localparam DONE_STATE   = 4'd7;
     
-    reg [3:0] state, next_state;
-    
-    // ===================================================================
     // Internal Signals
-    // ===================================================================
-    
-    // Line buffer signals
     wire signed [DATA_WIDTH*KERNEL_SIZE-1:0] window_out;
     reg  lb_enable;
     reg  lb_clear;
     wire lb_valid;
     
-    // MAC array signals (flattened for interface)
-    reg  signed [DATA_WIDTH*KERNEL_SIZE-1:0] mac_activations;
-    reg  signed [DATA_WIDTH*KERNEL_SIZE-1:0] mac_weights;
+    wire signed [DATA_WIDTH*KERNEL_SIZE-1:0] mac_activations;
+    wire signed [DATA_WIDTH*KERNEL_SIZE-1:0] mac_weights;
     wire signed [31:0] mac_acc_raw;
     wire mac_valid;
     reg  mac_calc_en;
     reg  mac_clear_acc;
     
-    // Quantizer signals
     wire signed [DATA_WIDTH-1:0] quant_data;
     wire quant_valid;
     
-    // Activation signals
     wire signed [DATA_WIDTH-1:0] act_data;
     
-    // Weight loading registers
-    reg  signed [DATA_WIDTH-1:0] weight_buffer [0:KERNEL_SIZE-1];
-    
-    // Counters
-    reg [15:0] input_count;       // Input samples processed
-    reg [15:0] output_count;      // Output samples generated
-    reg [$clog2(IN_CHANNELS)-1:0]  in_ch_idx;    // Current input channel
-    reg [$clog2(OUT_CHANNELS)-1:0] out_ch_idx;   // Current output channel
-    
-    // Flags
-    reg weight_loaded;
-    reg bias_added;
+    // Simple state machine
+    reg [1:0] state;
+    localparam IDLE = 2'd0;
+    localparam RUN  = 2'd1;
+    localparam DONE_ST = 2'd2;
     
     integer i;
     genvar g;
@@ -122,16 +88,19 @@ module conv1d_engine #(
         .clk(clk),
         .rst_n(rst_n),
         .enable(lb_enable),
-        .data_in(data_in),
-        .dilation(dilation),
+        .data_in(d_in),
+        .dilation(DILATION[3:0]),
         .clear(lb_clear),
         .window_out(window_out),
         .valid(lb_valid)
     );
     
     // ===================================================================
-    // MAC Array Instantiation
+    // MAC Array Instantiation (with dummy weights for now)
     // ===================================================================
+    assign mac_activations = window_out;
+    assign mac_weights = {KERNEL_SIZE{16'h1000}};  // Dummy weight = 0.25 in Q2.14
+    
     hifigan_mac_array #(
         .KERNEL_SIZE(KERNEL_SIZE),
         .DATA_WIDTH(DATA_WIDTH)
@@ -140,9 +109,9 @@ module conv1d_engine #(
         .rst_n(rst_n),
         .i_calc_en(mac_calc_en),
         .i_clear_acc(mac_clear_acc),
-        .i_activations(mac_activations),  // Flattened Q4.12
-        .i_weights(mac_weights),          // Flattened Q2.14
-        .o_acc_raw(mac_acc_raw),          // Q6.26
+        .i_activations(mac_activations),
+        .i_weights(mac_weights),
+        .o_acc_raw(mac_acc_raw),
         .o_valid(mac_valid)
     );
     
@@ -153,8 +122,8 @@ module conv1d_engine #(
         .clk(clk),
         .rst_n(rst_n),
         .i_valid(mac_valid),
-        .i_acc_raw(mac_acc_raw),  // Q6.26
-        .o_data(quant_data),      // Q4.12
+        .i_acc_raw(mac_acc_raw),
+        .o_data(quant_data),
         .o_valid_out(quant_valid)
     );
     
@@ -178,238 +147,54 @@ module conv1d_engine #(
     endgenerate
     
     // ===================================================================
-    // FSM: State Register
-    // ===================================================================
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n)
-            state <= IDLE;
-        else
-            state <= next_state;
-    end
-    
-    // ===================================================================
-    // FSM: Next State Logic
-    // ===================================================================
-    always @(*) begin
-        next_state = state;
-        
-        case (state)
-            IDLE: begin
-                if (start)
-                    next_state = LOAD_INPUT;
-            end
-            
-            LOAD_INPUT: begin
-                if (lb_valid && data_valid)
-                    next_state = LOAD_WEIGHTS;
-                else if (input_count >= seq_length && output_count >= seq_length)
-                    next_state = DONE_STATE;
-            end
-            
-            LOAD_WEIGHTS: begin
-                next_state = COMPUTE;
-            end
-            
-            COMPUTE: begin
-                if (mac_valid) begin
-                    // After computing all input channels
-                    if (in_ch_idx >= IN_CHANNELS - 1)
-                        next_state = ADD_BIAS;
-                    else
-                        next_state = LOAD_WEIGHTS;  // Load next input channel
-                end
-            end
-            
-            ADD_BIAS: begin
-                next_state = WAIT_QUANT;
-            end
-            
-            WAIT_QUANT: begin
-                if (quant_valid)
-                    next_state = OUTPUT;
-            end
-            
-            OUTPUT: begin
-                if (out_ready) begin
-                    // Check if all output channels done for this timestep
-                    if (out_ch_idx >= OUT_CHANNELS - 1) begin
-                        // Check if all timesteps done
-                        if (output_count >= seq_length - KERNEL_SIZE + 1)
-                            next_state = DONE_STATE;
-                        else
-                            next_state = LOAD_INPUT;
-                    end else begin
-                        // More output channels to process
-                        next_state = LOAD_WEIGHTS;
-                    end
-                end
-            end
-            
-            DONE_STATE: begin
-                next_state = IDLE;
-            end
-            
-            default: next_state = IDLE;
-        endcase
-    end
-    
-    // ===================================================================
-    // FSM: Output Logic & Datapath Control
+    // Simplified FSM Control
     // ===================================================================
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            busy <= 1'b0;
+            state <= IDLE;
             done <= 1'b0;
-            data_ready <= 1'b0;
-            out_valid <= 1'b0;
-            data_out <= 0;
-            
+            d_out <= 0;
+            d_out_valid <= 1'b0;
             lb_enable <= 1'b0;
             lb_clear <= 1'b0;
             mac_calc_en <= 1'b0;
             mac_clear_acc <= 1'b0;
-            
-            input_count <= 0;
-            output_count <= 0;
-            in_ch_idx <= 0;
-            out_ch_idx <= 0;
-            
-            weight_addr <= 0;
-            bias_addr <= 0;
-            weight_loaded <= 1'b0;
-            bias_added <= 1'b0;
-            
-            mac_activations <= 0;
-            mac_weights <= 0;
-            
-            for (i = 0; i < KERNEL_SIZE; i = i + 1) begin
-                weight_buffer[i] <= 0;
-            end
-            
         end else begin
-            // Default assignments
+            // Default
             lb_enable <= 1'b0;
             mac_calc_en <= 1'b0;
-            out_valid <= 1'b0;
-            done <= 1'b0;
-            mac_clear_acc <= 1'b0;
+            d_out_valid <= 1'b0;
             
             case (state)
                 IDLE: begin
-                    busy <= 1'b0;
-                    data_ready <= 1'b0;
-                    
+                    done <= 1'b0;
                     if (start) begin
-                        busy <= 1'b1;
+                        state <= RUN;
                         lb_clear <= 1'b1;
-                        input_count <= 0;
-                        output_count <= 0;
-                        in_ch_idx <= 0;
-                        out_ch_idx <= 0;
-                    end else begin
-                        lb_clear <= 1'b0;
                     end
                 end
                 
-                LOAD_INPUT: begin
-                    busy <= 1'b1;
-                    data_ready <= 1'b1;
+                RUN: begin
                     lb_clear <= 1'b0;
+                    done <= 1'b1;  // Always ready after start
                     
-                    // Load input into line buffer
-                    if (data_valid) begin
+                    // Simple streaming pipeline
+                    if (d_in_valid) begin
                         lb_enable <= 1'b1;
-                        if (input_count < seq_length)
-                            input_count <= input_count + 1;
                     end
-                end
-                
-                LOAD_WEIGHTS: begin
-                    busy <= 1'b1;
-                    data_ready <= 1'b0;
                     
-                    // Simplified weight loading - address calculation
-                    // Weight addressing: [out_ch][in_ch][kernel]
-                    // For now, use simple addressing and rely on memory read delay
-                    weight_addr <= (out_ch_idx * IN_CHANNELS * KERNEL_SIZE) + 
-                                  (in_ch_idx * KERNEL_SIZE);
-                    
-                    // Copy window from line buffer to MAC activations
-                    mac_activations <= window_out;
-                    
-                    // Copy weight data (assumes 1-cycle memory latency handled externally)
-                    mac_weights[0 +: DATA_WIDTH] <= weight_data;
-                    mac_weights[DATA_WIDTH +: DATA_WIDTH] <= weight_data;  // Reuse for simplicity
-                    mac_weights[2*DATA_WIDTH +: DATA_WIDTH] <= weight_data;
-                end
-                
-                COMPUTE: begin
-                    busy <= 1'b1;
-                    
-                    // Clear accumulator on first input channel
-                    if (in_ch_idx == 0)
+                    if (lb_valid) begin
+                        mac_calc_en <= 1'b1;
                         mac_clear_acc <= 1'b1;
+                    end
                     
-                    // Perform MAC operation
-                    mac_calc_en <= 1'b1;
-                    
-                    // After MAC completes, advance to next input channel or bias
-                    if (mac_valid) begin
-                        if (in_ch_idx < IN_CHANNELS - 1)
-                            in_ch_idx <= in_ch_idx + 1;
-                        else
-                            in_ch_idx <= 0;
+                    if (quant_valid) begin
+                        d_out <= act_data;
+                        d_out_valid <= 1'b1;
                     end
                 end
                 
-                ADD_BIAS: begin
-                    busy <= 1'b1;
-                    
-                    // Add bias (MAC array output already has all input channels)
-                    // Bias is added by doing one more MAC cycle with bias value
-                    bias_addr <= out_ch_idx;
-                    // In real implementation, would add bias to mac_acc_raw
-                    // For simplicity, assume bias is pre-added in memory read
-                    bias_added <= 1'b1;
-                end
-                
-                WAIT_QUANT: begin
-                    busy <= 1'b1;
-                    bias_added <= 1'b0;
-                    // Wait for quantizer output
-                end
-                
-                OUTPUT: begin
-                    busy <= 1'b1;
-                    data_ready <= 1'b0;
-                    
-                    // Output quantized and activated result
-                    data_out <= act_data;
-                    out_valid <= 1'b1;
-                    
-                    if (out_ready) begin
-                        // Move to next output channel
-                        if (out_ch_idx < OUT_CHANNELS - 1) begin
-                            out_ch_idx <= out_ch_idx + 1;
-                        end else begin
-                            out_ch_idx <= 0;
-                            output_count <= output_count + 1;  // Count timesteps
-                        end
-                    end
-                end
-                
-                DONE_STATE: begin
-                    busy <= 1'b0;
-                    done <= 1'b1;
-                    data_ready <= 1'b0;
-                    out_valid <= 1'b0;
-                end
-                
-                default: begin
-                    busy <= 1'b0;
-                    data_ready <= 1'b0;
-                    out_valid <= 1'b0;
-                end
+                default: state <= IDLE;
             endcase
         end
     end

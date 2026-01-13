@@ -1,46 +1,44 @@
 #!/bin/bash
-# Run conv1d_engine testbench simulation
+# Build and run conv1d_engine_bram testbench
 
-echo "======================================================================="
-echo "Conv1D Engine Testbench Simulation"
-echo "======================================================================="
+# Directories
+TB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CODE_DIR="${TB_DIR}/../code"
+SHARED_DIR="${TB_DIR}/../../"
 
-# Clean
-rm -f conv1d_engine_tb.vvp conv1d_engine_tb.vcd
+# Output files
+VVP_FILE="${TB_DIR}/conv1d_engine_bram_tb.vvp"
+VCD_FILE="${TB_DIR}/conv1d_engine_bram_tb.vcd"
 
-# Compile
-echo "Compiling..."
-iverilog -o conv1d_engine_tb.vvp \
-    -I ../../line_buffer/code \
-    -I ../../mac_array/code \
-    -I ../../quantizer/code \
-    ../../line_buffer/code/line_buffer.v \
-    ../../mac_array/code/hifigan_mac_array.v \
-    ../../mac_array/code/qmult.v \
-    ../../quantizer/code/quantizer_32_16.v \
-    ../code/conv1d_engine_simple.v \
-    conv1d_engine_tb.v
+echo "========================================="
+echo "Building Conv1D BRAM Engine Testbench"
+echo "========================================="
 
-if [ $? -ne 0 ]; then
-    echo "Compilation failed!"
+# Compile with iverilog
+iverilog -g2005 \
+    -o "${VVP_FILE}" \
+    "${CODE_DIR}/conv1d_engine_bram.v" \
+    "${SHARED_DIR}/quantizer/code/quantizer_32_16.v" \
+    "${SHARED_DIR}/activation_unit/code/leaky_relu_q15.v" \
+    "${SHARED_DIR}/activation_unit/code/tanh_approx_q15.v" \
+    "${TB_DIR}/conv1d_engine_bram_tb.v"
+
+if [ $? -eq 0 ]; then
+    echo ""
+    echo "Build successful! Running simulation..."
+    echo "========================================="
+    echo ""
+    
+    # Run simulation
+    vvp "${VVP_FILE}"
+    
+    echo ""
+    echo "========================================="
+    echo "Waveform saved to: ${VCD_FILE}"
+    echo "View with: gtkwave ${VCD_FILE}"
+    echo "========================================="
+else
+    echo ""
+    echo "[ERROR] Compilation failed!"
     exit 1
 fi
-
-echo "Compilation successful!"
-
-# Run
-echo "Running simulation..."
-vvp conv1d_engine_tb.vvp
-
-if [ $? -ne 0 ]; then
-    echo "Simulation failed!"
-    exit 1
-fi
-
-echo "Simulation completed!"
-if [ -f "conv1d_engine_tb.vcd" ]; then
-    echo "Waveform: conv1d_engine_tb.vcd"
-    echo "View with: gtkwave conv1d_engine_tb.vcd"
-fi
-
-echo "======================================================================="

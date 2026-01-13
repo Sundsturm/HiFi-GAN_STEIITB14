@@ -1,322 +1,389 @@
 // =======================================================================
-// Testbench: conv1d_engine_tb
-// Purpose: Test conv1d_engine with line_buffer, MAC array, and quantizer
+// Testbench: conv1d_engine_bram_tb
+// Purpose: Verify BRAM-based Conv1D engine for Zynq integration
 // =======================================================================
 
-`timescale 1ns / 1ps
+`timescale 1ns/1ps
 
-module conv1d_engine_tb;
+module conv1d_engine_bram_tb;
 
-    parameter DATA_WIDTH   = 16;
-    parameter KERNEL_SIZE  = 3;
-    parameter IN_CHANNELS  = 4;     // Reduced for testbench (normal: 80)
-    parameter OUT_CHANNELS = 4;     // Reduced for testbench (normal: 512)
-    parameter MAX_DILATION = 9;
-    parameter BUFFER_DEPTH = 64;
-    parameter MAX_SEQ_LEN  = 256;
-    parameter CLK_PERIOD   = 10;
+    // ===================================================================
+    // Parameters
+    // ===================================================================
+    parameter DATA_WIDTH = 16;
+    parameter KERNEL_SIZE = 7;
+    parameter CLK_PERIOD = 10;  // 100 MHz
     
-    // Address widths
-    localparam WEIGHT_ADDR_WIDTH = $clog2(IN_CHANNELS*OUT_CHANNELS*KERNEL_SIZE);
-    localparam BIAS_ADDR_WIDTH   = $clog2(OUT_CHANNELS);
-    
+    // ===================================================================
     // Signals
-    reg                          clk;
-    reg                          rst_n;
-    reg                          start;
-    reg  [15:0]                  seq_length;
-    reg  [3:0]                   dilation;
-    wire                         done;
-    wire                         busy;
-    reg  signed [DATA_WIDTH-1:0] data_in;
-    reg                          data_valid;
-    wire                         data_ready;
-    wire signed [DATA_WIDTH-1:0] data_out;
-    wire                         out_valid;
-    reg                          out_ready;
+    // ===================================================================
+    reg clk;
+    reg rst_n;
     
-    // Weight/Bias memory interface
-    wire [WEIGHT_ADDR_WIDTH-1:0] weight_addr;
-    reg  signed [DATA_WIDTH-1:0] weight_data;
-    wire [BIAS_ADDR_WIDTH-1:0]   bias_addr;
-    reg  signed [31:0]           bias_data;
+    // Control
+    reg start;
+    wire done;
+    wire busy;
     
-    // Weight/Bias memory arrays
-    reg signed [DATA_WIDTH-1:0] weight_mem [0:IN_CHANNELS*OUT_CHANNELS*KERNEL_SIZE-1];
-    reg signed [31:0]           bias_mem   [0:OUT_CHANNELS-1];
+    // Configuration
+    reg [15:0] seq_length;
+    reg [9:0]  in_channels;
+    reg [9:0]  out_channels;
+    reg [3:0]  kernel_size;
+    reg [3:0]  dilation;
     
-    integer i, j, k, errors;
+    // Input BRAM
+    wire [15:0] input_addr;
+    wire input_rd_en;
+    reg signed [DATA_WIDTH-1:0] input_data;
+    reg signed [DATA_WIDTH-1:0] input_bram [0:16383];  // 16K entries
     
-    // DUT
-    conv1d_engine #(
+    // Output BRAM
+    wire [15:0] output_addr;
+    wire output_wr_en;
+    wire signed [DATA_WIDTH-1:0] output_data;
+    reg signed [DATA_WIDTH-1:0] output_bram [0:16383];
+    
+    // Weight memory
+    wire [20:0] weight_addr;
+    reg signed [DATA_WIDTH-1:0] weight_data;
+    reg signed [DATA_WIDTH-1:0] weight_mem [0:20479];  // 20K entries
+    
+    // Bias memory
+    wire [10:0] bias_addr;
+    reg signed [31:0] bias_data;
+    reg signed [31:0] bias_mem [0:1023];
+    
+    // Test control
+    integer errors;
+    integer cycle_count;
+    reg signed [31:0] expected_output [0:255][0:15];  // [time][channel]
+    
+    // ===================================================================
+    // Clock Generation
+    // ===================================================================
+    initial begin
+        clk = 0;
+        forever #(CLK_PERIOD/2) clk = ~clk;
+    end
+    
+    // ===================================================================
+    // DUT Instantiation
+    // ===================================================================
+    conv1d_engine_bram #(
         .DATA_WIDTH(DATA_WIDTH),
         .KERNEL_SIZE(KERNEL_SIZE),
-        .IN_CHANNELS(IN_CHANNELS),
-        .OUT_CHANNELS(OUT_CHANNELS),
-        .MAX_DILATION(MAX_DILATION),
-        .BUFFER_DEPTH(BUFFER_DEPTH),
-        .MAX_SEQ_LEN(MAX_SEQ_LEN),
+        .MAX_IN_CH(256),
+        .MAX_OUT_CH(512),
+        .MAX_SEQ_LEN(256),
         .ACTIVATION("NONE")
     ) dut (
         .clk(clk),
         .rst_n(rst_n),
         .start(start),
-        .seq_length(seq_length),
-        .dilation(dilation),
         .done(done),
         .busy(busy),
-        .data_in(data_in),
-        .data_valid(data_valid),
-        .data_ready(data_ready),
-        .data_out(data_out),
-        .out_valid(out_valid),
-        .out_ready(out_ready),
+        .seq_length(seq_length),
+        .in_channels(in_channels),
+        .out_channels(out_channels),
+        .kernel_size(kernel_size),
+        .dilation(dilation),
+        .input_addr(input_addr),
+        .input_rd_en(input_rd_en),
+        .input_data(input_data),
+        .output_addr(output_addr),
+        .output_wr_en(output_wr_en),
+        .output_data(output_data),
         .weight_addr(weight_addr),
         .weight_data(weight_data),
         .bias_addr(bias_addr),
         .bias_data(bias_data)
     );
     
-    // Weight Memory Model (synchronous read)
+    // ===================================================================
+    // BRAM Read Logic
+    // ===================================================================
     always @(posedge clk) begin
-        if (weight_addr < IN_CHANNELS*OUT_CHANNELS*KERNEL_SIZE)
-            weight_data <= weight_mem[weight_addr];
-        else
-            weight_data <= 16'h0000;
+        if (input_rd_en)
+            input_data <= input_bram[input_addr];
+        
+        weight_data <= weight_mem[weight_addr];
+        bias_data <= bias_mem[bias_addr];
     end
     
-    // Bias Memory Model (synchronous read)
+    // ===================================================================
+    // BRAM Write Logic
+    // ===================================================================
     always @(posedge clk) begin
-        if (bias_addr < OUT_CHANNELS)
-            bias_data <= bias_mem[bias_addr];
-        else
-            bias_data <= 32'h00000000;
-    end
-    
-    // Clock
-    initial begin
-        clk = 0;
-        forever #(CLK_PERIOD/2) clk = ~clk;
-    end
-    
-    // VCD Dump
-    initial begin
-        $dumpfile("conv1d_engine_tb.vcd");
-        $dumpvars(0, conv1d_engine_tb);
-    end
-    
-    // Test
-    initial begin
-        $display("=======================================================================");
-        $display("Conv1D Engine Testbench Started (Multi-Channel)");
-        $display("Parameters: IN_CH=%0d, OUT_CH=%0d, KERNEL=%0d", IN_CHANNELS, OUT_CHANNELS, KERNEL_SIZE);
-        $display("=======================================================================");
-        errors = 0;
-        
-        // Initialize weight memory (simple pattern: Q2.14 format)
-        $display("\nInitializing weight memory...");
-        for (i = 0; i < IN_CHANNELS*OUT_CHANNELS*KERNEL_SIZE; i = i + 1) begin
-            weight_mem[i] = 16'h1000;  // Weight = 0.25 in Q2.14
+        if (output_wr_en) begin
+            output_bram[output_addr] <= output_data;
+            $display("[T=%0t] Output[addr=%0d] = %h (Q4.12 = %f)", 
+                     $time, output_addr, output_data, 
+                     $itor(output_data) / 4096.0);
         end
-        
-        // Initialize bias memory (Q6.26 format)
-        $display("Initializing bias memory...");
-        for (i = 0; i < OUT_CHANNELS; i = i + 1) begin
-            bias_mem[i] = 32'h04000000;  // Bias = 0.25 in Q6.26
-        end
-        
-        // Initialize signals
+    end
+    
+    // ===================================================================
+    // Test Stimulus
+    // ===================================================================
+    initial begin
+        // Initialize
         rst_n = 0;
         start = 0;
-        seq_length = 10;
-        dilation = 1;
-        data_in = 0;
-        data_valid = 0;
-        out_ready = 1;
+        errors = 0;
+        cycle_count = 0;
+        
+        $display("\n========================================");
+        $display("Conv1D BRAM Engine Testbench");
+        $display("========================================\n");
         
         // Reset
-        #(CLK_PERIOD*3);
+        repeat(5) @(posedge clk);
         rst_n = 1;
-        #(CLK_PERIOD*2);
+        repeat(2) @(posedge clk);
         
-        // Test 1: Basic Convolution with dilation=1
-        $display("\n--- Test 1: Dilation = 1, Seq_Length = 6 (simplified) ---");
-        dilation = 1;
-        seq_length = 6;  // Reduced for quicker test
-        start = 1;
-        #CLK_PERIOD;
-        start = 0;
+        // Run tests
+        run_test(3, 2, 3, 8, 1);   // Test 1: K=3, IN=2, OUT=3, SEQ=8
+        run_test(5, 4, 8, 10, 1);  // Test 2: K=5, IN=4, OUT=8, SEQ=10
+        run_test(3, 1, 1, 6, 1);   // Test 3: Single channel
+        run_test(3, 4, 4, 8, 2);   // Test 4: With dilation
         
-        // Feed input data
-        for (i = 1; i <= 6; i = i + 1) begin
-            @(posedge clk);
-            while (!data_ready) @(posedge clk);
-            data_in = i * 16'h0200;  // Incremental Q4.12: 0.5, 1.0, 1.5...
-            data_valid = 1;
-            $display("Time %0t: Input sample %0d = 0x%h", $time, i, data_in);
-            @(posedge clk);
-            data_valid = 0;
+        // Summary
+        $display("\n========================================");
+        $display("TEST SUMMARY");
+        $display("========================================");
+        if (errors == 0) begin
+            $display("ALL TESTS PASSED!");
+        end else begin
+            $display("TESTS FAILED: %0d errors", errors);
         end
-        
-        // Wait for some outputs (not all - expect 4 valid timesteps after filling buffer)
-        $display("Waiting for outputs...");
-        #(CLK_PERIOD*500);  // Fixed time wait instead of done
-        
-        $display("\n--- Test 1 Completed (outputs generated) ---");
-        
-        #(CLK_PERIOD*10);
-        
-        // Test 2: Convolution with dilation=3
-        $display("\n--- Test 2: Dilation = 3 ---");
-        dilation = 3;
-        seq_length = 8;
-        start = 1;
-        #CLK_PERIOD;
-        start = 0;
-        
-        for (i = 1; i <= 8; i = i + 1) begin
-            @(posedge clk);
-            while (!data_ready) @(posedge clk);
-            data_in = i * 16'h0100;  // Different pattern (smaller increments)
-            data_valid = 1;
-            $display("Time %0t: Input sample %0d = 0x%h", $time, i, data_in);
-            @(posedge clk);
-            data_valid = 0;
-        end
-        
-        $display("Waiting for outputs...");
-        #(CLK_PERIOD*600);  // Wait for outputs with dilation=3
-        $display("\n--- Test 2 Completed ---");
-        
-        #(CLK_PERIOD*20);
-        
-        // Soft reset between tests
-        @(posedge clk);
-        rst_n = 0;
-        #(CLK_PERIOD*3);
-        rst_n = 1;
-        #(CLK_PERIOD*5);
-        
-        // Test 3: Different input pattern (negative values)
-        $display("\n--- Test 3: Negative Input Values ---");
-        dilation = 1;
-        seq_length = 5;
-        start = 1;
-        #CLK_PERIOD;
-        start = 0;
-        
-        for (i = 1; i <= 5; i = i + 1) begin
-            @(posedge clk);
-            while (!data_ready) @(posedge clk);
-            // Alternate positive and negative
-            if (i % 2 == 0)
-                data_in = i * 16'h0200;
-            else
-                data_in = -(i * 16'h0200);
-            data_valid = 1;
-            $display("Time %0t: Input sample %0d = 0x%h (%d)", $time, i, data_in, $signed(data_in));
-            @(posedge clk);
-            data_valid = 0;
-        end
-        
-        $display("Waiting for outputs...");
-        #(CLK_PERIOD*400);
-        $display("\n--- Test 3 Completed ---");
-        
-        #(CLK_PERIOD*20);
-        
-        // Soft reset between tests
-        @(posedge clk);
-        rst_n = 0;
-        #(CLK_PERIOD*3);
-        rst_n = 1;
-        #(CLK_PERIOD*5);
-        
-        // Test 4: Zero inputs
-        $display("\n--- Test 4: Zero Inputs ---");
-        dilation = 1;
-        seq_length = 4;
-        start = 1;
-        #CLK_PERIOD;
-        start = 0;
-        
-        for (i = 1; i <= 4; i = i + 1) begin
-            @(posedge clk);
-            while (!data_ready) @(posedge clk);
-            data_in = 16'h0000;  // All zeros
-            data_valid = 1;
-            $display("Time %0t: Input sample %0d = 0x%h", $time, i, data_in);
-            @(posedge clk);
-            data_valid = 0;
-        end
-        
-        $display("Waiting for outputs...");
-        #(CLK_PERIOD*400);
-        $display("\n--- Test 4 Completed ---");
-        
-        #(CLK_PERIOD*20);
-        
-        // Soft reset between tests
-        @(posedge clk);
-        rst_n = 0;
-        #(CLK_PERIOD*3);
-        rst_n = 1;
-        #(CLK_PERIOD*5);
-        
-        // Test 5: Maximum positive values
-        $display("\n--- Test 5: Max Positive Values ---");
-        dilation = 1;
-        seq_length = 4;
-        start = 1;
-        #CLK_PERIOD;
-        start = 0;
-        
-        for (i = 1; i <= 4; i = i + 1) begin
-            @(posedge clk);
-            while (!data_ready) @(posedge clk);
-            data_in = 16'h7FFF;  // Max positive Q4.12
-            data_valid = 1;
-            $display("Time %0t: Input sample %0d = 0x%h", $time, i, data_in);
-            @(posedge clk);
-            data_valid = 0;
-        end
-        
-        $display("Waiting for outputs...");
-        #(CLK_PERIOD*400);
-        $display("\n--- Test 5 Completed ---");
-        
-        #(CLK_PERIOD*20);
-        
-        $display("\n=======================================================================");
-        $display("Test Summary:");
-        $display("  Total Errors: %0d", errors);
-        $display("  Total Outputs: %0d", output_counter);
-        $display("  Test Cases: 5 (Dilation=1, Dilation=3, Negative, Zero, Max)");
-        if (errors == 0 && output_counter > 0)
-            $display("  Status: ALL TESTS PASSED");
-        else
-            $display("  Status: TESTS FAILED");
-        $display("=======================================================================");
+        $display("========================================\n");
         
         $finish;
     end
     
-    // Monitor outputs
-    reg [15:0] output_counter;
-    initial output_counter = 0;
-    
-    always @(posedge clk) begin
-        if (out_valid && out_ready) begin
-            output_counter <= output_counter + 1;
-            $display("Time %0t: Output = 0x%h (%d)", $time, data_out, $signed(data_out));
+    // ===================================================================
+    // Task: Run Test
+    // ===================================================================
+    task run_test;
+        input integer k_size;
+        input integer in_ch;
+        input integer out_ch;
+        input integer seq_len;
+        input integer dil;
+        
+        integer timeout;
+        
+        begin
+            $display("\n========================================");
+            $display("TEST: K=%0d, IN=%0d, OUT=%0d, SEQ=%0d, DIL=%0d", 
+                     k_size, in_ch, out_ch, seq_len, dil);
+            $display("========================================");
+            
+            // Configure
+            kernel_size = k_size;
+            in_channels = in_ch;
+            out_channels = out_ch;
+            seq_length = seq_len;
+            dilation = dil;
+            
+            // Load test data
+            load_weights(k_size, in_ch, out_ch);
+            load_input(seq_len, in_ch);
+            compute_expected(k_size, in_ch, out_ch, seq_len, dil);
+            
+            // Start processing
+            cycle_count = 0;
+            @(posedge clk);
+            start = 1;
+            @(posedge clk);
+            start = 0;
+            
+            // Wait for completion
+            timeout = 50000;
+            while (!done && timeout > 0) begin
+                @(posedge clk);
+                timeout = timeout - 1;
+                cycle_count = cycle_count + 1;
+            end
+            
+            if (timeout == 0) begin
+                $display("[ERROR] Test timeout after 50000 cycles!");
+                errors = errors + 1;
+            end else begin
+                $display("[PASS] Completed in %0d cycles", cycle_count);
+            end
+            
+            // Verify outputs
+            check_outputs(out_ch, seq_len);
+            
+            repeat(10) @(posedge clk);
         end
-    end
+    endtask
     
-    // Timeout
-    initial begin
-        #(CLK_PERIOD * 10000);  // Increased timeout
-        $display("ERROR: Testbench timeout!");
-        $finish;
-    end
+    // ===================================================================
+    // Task: Load Weights
+    // ===================================================================
+    task load_weights;
+        input integer k_size;
+        input integer in_ch;
+        input integer out_ch;
+        
+        integer o, i, k, addr;
+        real weight_val;
+        
+        begin
+            $display("[Load Weights] K=%0d, IN_CH=%0d, OUT_CH=%0d", k_size, in_ch, out_ch);
+            
+            addr = 0;
+            for (o = 0; o < out_ch; o = o + 1) begin
+                for (i = 0; i < in_ch; i = i + 1) begin
+                    for (k = 0; k < k_size; k = k + 1) begin
+                        // Weight pattern: (out_ch+1) * 0.1 in Q2.14
+                        weight_val = (o + 1) * 0.1;
+                        weight_mem[addr] = $rtoi(weight_val * 16384.0);
+                        addr = addr + 1;
+                    end
+                end
+            end
+            
+            // Load biases: out_ch * 0.5 in Q6.26
+            for (o = 0; o < out_ch; o = o + 1) begin
+                bias_mem[o] = $rtoi(o * 0.5 * 67108864.0);
+            end
+            
+            $display("[Load Weights] Loaded %0d weights and %0d biases", addr, out_ch);
+        end
+    endtask
+    
+    // ===================================================================
+    // Task: Load Input
+    // ===================================================================
+    task load_input;
+        input integer seq_len;
+        input integer in_ch;
+        
+        integer t, c, addr;
+        real input_val;
+        
+        begin
+            $display("[Load Input] SEQ=%0d, IN_CH=%0d", seq_len, in_ch);
+            
+            for (t = 0; t < seq_len; t = t + 1) begin
+                for (c = 0; c < in_ch; c = c + 1) begin
+                    // Input pattern: ramp 0.0, 0.1, 0.2, ... in Q4.12
+                    addr = t * in_ch + c;
+                    input_val = t * 0.1;
+                    input_bram[addr] = $rtoi(input_val * 4096.0);
+                end
+            end
+            
+            $display("[Load Input] Loaded %0d samples", seq_len * in_ch);
+        end
+    endtask
+    
+    // ===================================================================
+    // Task: Compute Expected Output (Golden Model)
+    // ===================================================================
+    task compute_expected;
+        input integer k_size;
+        input integer in_ch;
+        input integer out_ch;
+        input integer seq_len;
+        input integer dil;
+        
+        integer t_out, o, i, k_idx, t_in;
+        reg signed [31:0] accumulator;
+        reg signed [31:0] weight_val;
+        reg signed [31:0] input_val;
+        reg signed [31:0] product;
+        
+        begin
+            $display("[Compute Expected] K=%0d, IN=%0d, OUT=%0d, SEQ=%0d, DIL=%0d", 
+                     k_size, in_ch, out_ch, seq_len, dil);
+            
+            for (t_out = 0; t_out < seq_len; t_out = t_out + 1) begin
+                for (o = 0; o < out_ch; o = o + 1) begin
+                    accumulator = 0;
+                    
+                    for (i = 0; i < in_ch; i = i + 1) begin
+                        for (k_idx = 0; k_idx < k_size; k_idx = k_idx + 1) begin
+                            t_in = t_out + k_idx * dil;
+                            
+                            if (t_in < seq_len) begin
+                                // Get weight (Q2.14)
+                                weight_val = $signed(weight_mem[(o * in_ch * k_size) + 
+                                                               (i * k_size) + k_idx]);
+                                
+                                // Get input (Q4.12) - reuse same value for all channels
+                                input_val = $signed(input_bram[t_in * in_ch + i]);
+                                
+                                // Multiply: Q4.12 * Q2.14 = Q6.26
+                                product = (input_val * weight_val);
+                                accumulator = accumulator + product;
+                            end
+                        end
+                    end
+                    
+                    // Add bias (Q6.26)
+                    accumulator = accumulator + $signed(bias_mem[o]);
+                    
+                    // Quantize to Q4.12
+                    expected_output[t_out][o] = (accumulator + 32768) >>> 16;  // Round
+                end
+            end
+            
+            $display("[Compute Expected] Done");
+        end
+    endtask
+    
+    // ===================================================================
+    // Task: Check Outputs
+    // ===================================================================
+    task check_outputs;
+        input integer out_ch;
+        input integer seq_len;
+        
+        integer t, c, addr;
+        reg signed [DATA_WIDTH-1:0] expected;
+        reg signed [DATA_WIDTH-1:0] received;
+        integer diff, max_diff;
+        integer mismatches;
+        
+        begin
+            $display("[Check Outputs] Verifying %0d outputs...", seq_len * out_ch);
+            
+            max_diff = 0;
+            mismatches = 0;
+            
+            for (t = 0; t < seq_len; t = t + 1) begin
+                for (c = 0; c < out_ch; c = c + 1) begin
+                    addr = t * out_ch + c;
+                    expected = expected_output[t][c];
+                    received = output_bram[addr];
+                    
+                    diff = (expected > received) ? (expected - received) : (received - expected);
+                    
+                    if (diff > max_diff)
+                        max_diff = diff;
+                    
+                    if (diff > 100) begin  // Tolerance: ±100 LSBs (~0.024 in Q4.12)
+                        $display("[MISMATCH] t=%0d, ch=%0d: expected=%h, got=%h (diff=%0d)", 
+                                 t, c, expected, received, diff);
+                        mismatches = mismatches + 1;
+                    end
+                end
+            end
+            
+            $display("[Check Outputs] Max difference: %0d LSBs", max_diff);
+            
+            if (mismatches > 0) begin
+                $display("[FAIL] %0d mismatches found", mismatches);
+                errors = errors + 1;
+            end else begin
+                $display("[PASS] All outputs match within tolerance");
+            end
+        end
+    endtask
 
 endmodule
