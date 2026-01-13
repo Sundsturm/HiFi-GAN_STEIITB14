@@ -11,19 +11,12 @@ module pwl_activation(
 
     always @(*) begin
         if (d_in <= LOWER_THRESH) begin
-            // Segmen 1: Saturasi Bawah (-1.0)
             d_out = VAL_MINUS_ONE;
         end 
         else if (d_in >= UPPER_THRESH) begin
-            // Segmen 3: Saturasi Atas (+1.0)
             d_out = VAL_ONE;
         end 
         else begin
-            // Segmen 2: Daerah Linear
-            // Rumus: y = 2x
-            // Logic shift left (<<< 1) tetap valid untuk Q4.12
-            // Contoh: Input 0.25 (1024) -> Output 1024 << 1 = 2048 (0.5) -> Benar.
-            
             d_out = d_in <<< 1;
         end
     end

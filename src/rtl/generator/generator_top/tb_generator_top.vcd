@@ -1,0 +1,322 @@
+$date
+	Tue Jan 13 10:13:01 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module tb_generator_top $end
+$var wire 16 ! dout [15:0] $end
+$var wire 1 " done $end
+$var parameter 32 # DWIDTH $end
+$var reg 1 $ clk $end
+$var reg 16 % din [15:0] $end
+$var reg 1 & rst_n $end
+$var reg 1 ' start $end
+$scope module uut $end
+$var wire 1 $ clk $end
+$var wire 16 ( din [15:0] $end
+$var wire 1 & rst_n $end
+$var wire 1 ' start $end
+$var wire 1 ) start_stage2_up $end
+$var wire 1 * start_stage2_mrf $end
+$var wire 1 + start_stage1_up $end
+$var wire 1 , start_stage1_mrf $end
+$var wire 16 - dout [15:0] $end
+$var wire 1 . done_stage2_up $end
+$var wire 1 / done_stage2_mrf $end
+$var wire 1 0 done_stage1_up $end
+$var wire 1 1 done_stage1_mrf $end
+$var wire 1 " done $end
+$var wire 16 2 data_s2_up_to_mrf [15:0] $end
+$var wire 16 3 data_s1_up_to_mrf [15:0] $end
+$var wire 16 4 data_s1_to_s2 [15:0] $end
+$var parameter 32 5 DWIDTH $end
+$var parameter 32 6 MRF_K1_S1 $end
+$var parameter 32 7 MRF_K1_S2 $end
+$var parameter 32 8 MRF_K2_S1 $end
+$var parameter 32 9 MRF_K2_S2 $end
+$var parameter 32 : MRF_K3_S1 $end
+$var parameter 32 ; MRF_K3_S2 $end
+$var parameter 32 < UPSAMPLE_RATE_1 $end
+$var parameter 32 = UPSAMPLE_RATE_2 $end
+$scope module u_gen_fsm $end
+$var wire 1 $ clk $end
+$var wire 1 ' gen_start $end
+$var wire 1 & rst_n $end
+$var wire 1 . s2_up_done $end
+$var wire 1 / s2_mrf_done $end
+$var wire 1 0 s1_up_done $end
+$var wire 1 1 s1_mrf_done $end
+$var parameter 32 > DONE $end
+$var parameter 32 ? IDLE $end
+$var parameter 32 @ S1_MRF $end
+$var parameter 32 A S1_UP $end
+$var parameter 32 B S2_MRF $end
+$var parameter 32 C S2_UP $end
+$var reg 1 " gen_done $end
+$var reg 1 , s1_mrf_start $end
+$var reg 1 + s1_up_start $end
+$var reg 1 * s2_mrf_start $end
+$var reg 1 ) s2_up_start $end
+$var reg 3 D state [2:0] $end
+$upscope $end
+$scope module u_stage1_mrf $end
+$var wire 1 $ clk $end
+$var wire 1 & rst_n $end
+$var wire 1 , start $end
+$var wire 16 E din [15:0] $end
+$var parameter 32 F DWIDTH $end
+$var parameter 32 G K1 $end
+$var parameter 32 H K2 $end
+$var parameter 32 I K3 $end
+$var reg 1 1 done $end
+$var reg 16 J dout [15:0] $end
+$upscope $end
+$scope module u_stage1_upsample $end
+$var wire 1 $ clk $end
+$var wire 16 K din [15:0] $end
+$var wire 1 & rst_n $end
+$var wire 1 + start $end
+$var parameter 32 L DWIDTH $end
+$var parameter 32 M RATE $end
+$var reg 1 0 done $end
+$var reg 16 N dout [15:0] $end
+$upscope $end
+$scope module u_stage2_mrf $end
+$var wire 1 $ clk $end
+$var wire 1 & rst_n $end
+$var wire 1 * start $end
+$var wire 16 O din [15:0] $end
+$var parameter 32 P DWIDTH $end
+$var parameter 32 Q K1 $end
+$var parameter 32 R K2 $end
+$var parameter 32 S K3 $end
+$var reg 1 / done $end
+$var reg 16 T dout [15:0] $end
+$upscope $end
+$scope module u_stage2_upsample $end
+$var wire 1 $ clk $end
+$var wire 16 U din [15:0] $end
+$var wire 1 & rst_n $end
+$var wire 1 ) start $end
+$var parameter 32 V DWIDTH $end
+$var parameter 32 W RATE $end
+$var reg 1 . done $end
+$var reg 16 X dout [15:0] $end
+$upscope $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b1000 W
+b10000 V
+b1011 S
+b111 R
+b11 Q
+b10000 P
+b1000 M
+b10000 L
+b1011 I
+b111 H
+b11 G
+b10000 F
+b11 C
+b100 B
+b1 A
+b10 @
+b0 ?
+b101 >
+b1000 =
+b1000 <
+b1011 ;
+b1011 :
+b111 9
+b111 8
+b11 7
+b11 6
+b10000 5
+b10000 #
+$end
+#0
+$dumpvars
+b0 X
+b0 U
+b0 T
+b0 O
+b0 N
+b0 K
+b0 J
+b0 E
+b0 D
+b0 4
+b0 3
+b0 2
+01
+00
+0/
+0.
+b0 -
+0,
+0+
+0*
+0)
+b0 (
+0'
+0&
+b0 %
+0$
+0"
+b0 !
+$end
+#5000
+1$
+#10000
+0$
+#15000
+1$
+#20000
+0$
+1&
+#25000
+1$
+#30000
+0$
+#35000
+1$
+#40000
+0$
+1'
+b1100100 %
+b1100100 (
+b1100100 K
+#45000
+1+
+b1 D
+1$
+#50000
+0$
+0'
+#55000
+0+
+b1100100 3
+b1100100 E
+b1100100 N
+1$
+#60000
+0$
+#65000
+1$
+#70000
+0$
+#75000
+10
+1$
+#80000
+0$
+#85000
+00
+1,
+b10 D
+1$
+#90000
+0$
+#95000
+0,
+b1100100 4
+b1100100 J
+b1100100 U
+1$
+#100000
+0$
+#105000
+1$
+#110000
+0$
+#115000
+11
+1$
+#120000
+0$
+#125000
+01
+1)
+b11 D
+1$
+#130000
+0$
+#135000
+0)
+b1100100 2
+b1100100 O
+b1100100 X
+1$
+#140000
+0$
+#145000
+1$
+#150000
+0$
+#155000
+1.
+1$
+#160000
+0$
+#165000
+0.
+1*
+b100 D
+1$
+#170000
+0$
+#175000
+0*
+b1100100 !
+b1100100 -
+b1100100 T
+1$
+#180000
+0$
+#185000
+1$
+#190000
+0$
+#195000
+1/
+1$
+#200000
+0$
+#205000
+0/
+1"
+b101 D
+1$
+#210000
+0$
+#215000
+0"
+b0 D
+1$
+#220000
+0$
+#225000
+1$
+#230000
+0$
+#235000
+1$
+#240000
+0$
+#245000
+1$
+#250000
+0$
+#255000
+1$
+#260000
+0$
+#265000
+1$

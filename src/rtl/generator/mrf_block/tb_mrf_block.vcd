@@ -1,0 +1,251 @@
+$date
+	Tue Jan 13 10:21:24 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module tb_mrf_block $end
+$var wire 16 ! dout [15:0] $end
+$var wire 1 " done $end
+$var parameter 32 # DWIDTH $end
+$var reg 1 $ clk $end
+$var reg 16 % din [15:0] $end
+$var reg 1 & rst_n $end
+$var reg 1 ' start $end
+$scope module uut $end
+$var wire 1 $ clk $end
+$var wire 16 ( din [15:0] $end
+$var wire 1 & rst_n $end
+$var wire 1 ' start $end
+$var wire 18 ) temp_sum [17:0] $end
+$var wire 16 * branch3_out [15:0] $end
+$var wire 1 + branch3_done $end
+$var wire 16 , branch2_out [15:0] $end
+$var wire 1 - branch2_done $end
+$var wire 16 . branch1_out [15:0] $end
+$var wire 1 / branch1_done $end
+$var parameter 32 0 DWIDTH $end
+$var parameter 32 1 K1 $end
+$var parameter 32 2 K2 $end
+$var parameter 32 3 K3 $end
+$var parameter 16 4 MAX_VAL $end
+$var parameter 16 5 MIN_VAL $end
+$var parameter 32 6 Q_SCALE $end
+$var reg 1 " done $end
+$var reg 16 7 dout [15:0] $end
+$scope module u_res_block_1 $end
+$var wire 1 $ clk $end
+$var wire 16 8 din [15:0] $end
+$var wire 1 & rst_n $end
+$var wire 1 ' start $end
+$var parameter 32 9 DWIDTH $end
+$var parameter 32 : KERNEL_SIZE $end
+$var reg 1 / done $end
+$var reg 16 ; dout [15:0] $end
+$upscope $end
+$scope module u_res_block_2 $end
+$var wire 1 $ clk $end
+$var wire 16 < din [15:0] $end
+$var wire 1 & rst_n $end
+$var wire 1 ' start $end
+$var parameter 32 = DWIDTH $end
+$var parameter 32 > KERNEL_SIZE $end
+$var reg 1 - done $end
+$var reg 16 ? dout [15:0] $end
+$upscope $end
+$scope module u_res_block_3 $end
+$var wire 1 $ clk $end
+$var wire 16 @ din [15:0] $end
+$var wire 1 & rst_n $end
+$var wire 1 ' start $end
+$var parameter 32 A DWIDTH $end
+$var parameter 32 B KERNEL_SIZE $end
+$var reg 1 + done $end
+$var reg 16 C dout [15:0] $end
+$upscope $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b1011 B
+b10000 A
+b111 >
+b10000 =
+b11 :
+b10000 9
+b0 6
+b1000000000000000 5
+b111111111111111 4
+b1011 3
+b111 2
+b11 1
+b10000 0
+b10000 #
+$end
+#0
+$dumpvars
+b0 C
+b0 @
+b0 ?
+b0 <
+b0 ;
+b0 8
+b0 7
+0/
+b0 .
+0-
+b0 ,
+0+
+b0 *
+b0 )
+b0 (
+0'
+0&
+b0 %
+0$
+0"
+b0 !
+$end
+#5000
+1$
+#10000
+0$
+#15000
+1$
+#20000
+0$
+1&
+#25000
+1$
+#30000
+0$
+#35000
+1$
+#40000
+0$
+1'
+b1111101000 %
+b1111101000 (
+b1111101000 8
+b1111101000 <
+b1111101000 @
+#45000
+b1111101000 *
+b1111101000 C
+b1111101000 ,
+b1111101000 ?
+b101110111000 )
+b1111101000 .
+b1111101000 ;
+1$
+#50000
+0$
+0'
+#55000
+1$
+#60000
+0$
+#65000
+1+
+1-
+1/
+1$
+#70000
+0$
+#75000
+0/
+0-
+0+
+b101110111000 !
+b101110111000 7
+1"
+1$
+#80000
+0$
+#85000
+0"
+1$
+#90000
+0$
+#95000
+1$
+#100000
+0$
+#105000
+1$
+#110000
+0$
+#115000
+1$
+#120000
+0$
+#125000
+1$
+#130000
+0$
+#135000
+b111110100 .
+b111110100 ;
+b111110100 ,
+b111110100 ?
+b10111011100 )
+b111110100 *
+b111110100 C
+1$
+1'
+b111110100 %
+b111110100 (
+b111110100 8
+b111110100 <
+b111110100 @
+#140000
+0$
+#145000
+1$
+0'
+#150000
+0$
+#155000
+1/
+1-
+1+
+1$
+#160000
+0$
+#165000
+0+
+0-
+0/
+b10111011100 !
+b10111011100 7
+1"
+1$
+#170000
+0$
+#175000
+0"
+1$
+#180000
+0$
+#185000
+1$
+#190000
+0$
+#195000
+1$
+#200000
+0$
+#205000
+1$
+#210000
+0$
+#215000
+1$
+#220000
+0$
+#225000
+1$

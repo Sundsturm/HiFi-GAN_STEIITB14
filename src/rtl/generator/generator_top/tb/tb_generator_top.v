@@ -44,6 +44,8 @@ module tb_generator_top();
     //-------------------------------------------------------------------------
     initial begin
         // Initialize
+        dumpfile("tb_generator_top.vcd");
+        dumpvars(0, tb_generator_top);
         clk = 0;
         rst_n = 0;
         start = 0;
