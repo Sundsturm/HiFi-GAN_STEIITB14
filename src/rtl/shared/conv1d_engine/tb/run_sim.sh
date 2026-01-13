@@ -17,11 +17,13 @@ echo "========================================="
 # Compile with iverilog
 iverilog -g2005 \
     -o "${VVP_FILE}" \
-    "${CODE_DIR}/conv1d_engine_bram.v" \
+    "${CODE_DIR}/conv1d_engine.v" \
     "${SHARED_DIR}/quantizer/code/quantizer_32_16.v" \
+    "${SHARED_DIR}/mac_array/code/hifigan_mac_array.v" \
+    "${SHARED_DIR}/mac_array/code/qmult.v" \
     "${SHARED_DIR}/activation_unit/code/leaky_relu_q15.v" \
     "${SHARED_DIR}/activation_unit/code/tanh_approx_q15.v" \
-    "${TB_DIR}/conv1d_engine_bram_tb.v"
+    "${TB_DIR}/conv1d_engine_tb.v"
 
 if [ $? -eq 0 ]; then
     echo ""

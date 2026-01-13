@@ -99,6 +99,16 @@ module conv1d_engine_bram #(
     reg signed [DATA_WIDTH-1:0] weight_buffer [0:KERNEL_SIZE-1];
     reg signed [DATA_WIDTH-1:0] input_buffer  [0:KERNEL_SIZE-1];
     
+    // MAC array control signals
+    reg mac_calc_en;
+    reg mac_clear_acc;
+    wire signed [31:0] mac_acc_raw;
+    wire mac_valid;
+    
+    // Flatten buffers for MAC array (concatenate into single vector)
+    reg signed [(KERNEL_SIZE*DATA_WIDTH)-1:0] mac_activations;
+    reg signed [(KERNEL_SIZE*DATA_WIDTH)-1:0] mac_weights;
+    
     // ===================================================================
     // Memory Access State Machine
     // ===================================================================
@@ -128,6 +138,23 @@ module conv1d_engine_bram #(
         .i_acc_raw(quant_input),
         .o_data(quant_output),
         .o_valid_out(quant_valid_out)
+    );
+    
+    // ===================================================================
+    // Instantiate MAC Array (Q4.12 × Q2.14 → Q6.26 with saturation)
+    // ===================================================================
+    hifigan_mac_array #(
+        .KERNEL_SIZE(KERNEL_SIZE),
+        .DATA_WIDTH(DATA_WIDTH)
+    ) u_mac_array (
+        .clk(clk),
+        .rst_n(rst_n),
+        .i_calc_en(mac_calc_en),
+        .i_clear_acc(mac_clear_acc),
+        .i_activations(mac_activations),
+        .i_weights(mac_weights),
+        .o_acc_raw(mac_acc_raw),
+        .o_valid(mac_valid)
     );
     
     // ===================================================================
@@ -187,10 +214,13 @@ module conv1d_engine_bram #(
             end
             
             COMPUTE_MAC: begin
-                if (in_ch >= in_channels - 1)
-                    next_state = ADD_BIAS;
-                else
-                    next_state = LOAD_WEIGHTS;  // Next input channel
+                // Wait for MAC array to complete (mac_valid asserted)
+                if (mac_valid) begin
+                    if (in_ch >= in_channels - 1)
+                        next_state = ADD_BIAS;
+                    else
+                        next_state = LOAD_WEIGHTS;  // Next input channel
+                end
             end
             
             ADD_BIAS: begin
@@ -250,6 +280,11 @@ module conv1d_engine_bram #(
             quant_input <= 0;
             quant_valid_in <= 1'b0;
             
+            mac_calc_en <= 1'b0;
+            mac_clear_acc <= 1'b0;
+            mac_activations <= 0;
+            mac_weights <= 0;
+            
             for (i = 0; i < KERNEL_SIZE; i = i + 1) begin
                 weight_buffer[i] <= 0;
                 input_buffer[i] <= 0;
@@ -261,6 +296,8 @@ module conv1d_engine_bram #(
             output_wr_en <= 1'b0;
             done <= 1'b0;
             quant_valid_in <= 1'b0;
+            mac_calc_en <= 1'b0;
+            mac_clear_acc <= 1'b0;
             
             case (state)
                 IDLE: begin
@@ -342,21 +379,48 @@ module conv1d_engine_bram #(
                 COMPUTE_MAC: begin
                     busy <= 1'b1;
                     
-                    // Perform MAC: sum(input[k] * weight[k]) for k=0 to kernel_size-1
-                    mac_result = 0;
-                    for (i = 0; i < KERNEL_SIZE; i = i + 1) begin
-                        if (i < kernel_size) begin
-                            // Q4.12 * Q2.14 = Q6.26
-                            mac_result = mac_result + (input_buffer[i] * weight_buffer[i]);
-                        end
+                    // Flatten buffers into vectors for MAC array
+                    // Must do this with explicit assignments (no for-loop with variable indices)
+                    mac_activations[DATA_WIDTH-1:0] = input_buffer[0];
+                    mac_weights[DATA_WIDTH-1:0] = weight_buffer[0];
+                    if (KERNEL_SIZE > 1) begin
+                        mac_activations[2*DATA_WIDTH-1:DATA_WIDTH] = input_buffer[1];
+                        mac_weights[2*DATA_WIDTH-1:DATA_WIDTH] = weight_buffer[1];
+                    end
+                    if (KERNEL_SIZE > 2) begin
+                        mac_activations[3*DATA_WIDTH-1:2*DATA_WIDTH] = input_buffer[2];
+                        mac_weights[3*DATA_WIDTH-1:2*DATA_WIDTH] = weight_buffer[2];
+                    end
+                    if (KERNEL_SIZE > 3) begin
+                        mac_activations[4*DATA_WIDTH-1:3*DATA_WIDTH] = input_buffer[3];
+                        mac_weights[4*DATA_WIDTH-1:3*DATA_WIDTH] = weight_buffer[3];
+                    end
+                    if (KERNEL_SIZE > 4) begin
+                        mac_activations[5*DATA_WIDTH-1:4*DATA_WIDTH] = input_buffer[4];
+                        mac_weights[5*DATA_WIDTH-1:4*DATA_WIDTH] = weight_buffer[4];
+                    end
+                    if (KERNEL_SIZE > 5) begin
+                        mac_activations[6*DATA_WIDTH-1:5*DATA_WIDTH] = input_buffer[5];
+                        mac_weights[6*DATA_WIDTH-1:5*DATA_WIDTH] = weight_buffer[5];
+                    end
+                    if (KERNEL_SIZE > 6) begin
+                        mac_activations[7*DATA_WIDTH-1:6*DATA_WIDTH] = input_buffer[6];
+                        mac_weights[7*DATA_WIDTH-1:6*DATA_WIDTH] = weight_buffer[6];
                     end
                     
-                    // Accumulate across input channels
-                    channel_acc <= channel_acc + mac_result;
+                    // Trigger MAC array computation
+                    // First input channel: clear accumulator, subsequent: accumulate
+                    mac_clear_acc <= (in_ch == 0) ? 1'b1 : 1'b0;
+                    mac_calc_en <= 1'b1;
                     
-                    // Move to next input channel
-                    in_ch <= in_ch + 1;
-                    mem_state <= MEM_IDLE;
+                    // Wait for MAC array valid signal, then capture result
+                    if (mac_valid) begin
+                        channel_acc <= mac_acc_raw;
+                        
+                        // Move to next input channel
+                        in_ch <= in_ch + 1;
+                        mem_state <= MEM_IDLE;
+                    end
                 end
                 
                 ADD_BIAS: begin
